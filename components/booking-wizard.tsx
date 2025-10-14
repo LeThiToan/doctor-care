@@ -31,6 +31,7 @@ export interface Doctor {
 }
 
 export interface BookingData {
+  user_id?: number   // nếu có đăng nhập người dùng, còn không có thể bỏ
   specialty: string
   doctors: Doctor[]
   doctor: Doctor | null

@@ -23,20 +23,58 @@ export default function ConfirmationStep({ bookingData, onPrevious }: Confirmati
   const [isSubmitted, setIsSubmitted] = useState(false)
   const router = useRouter()
 
+  // 🟢 Hàm xử lý xác nhận và lưu dữ liệu vào DB
   const handleConfirm = async () => {
     setIsSubmitting(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      // ✅ Lấy thông tin user từ localStorage
+      const user = JSON.parse(localStorage.getItem("user") || "null")
 
-    setIsSubmitted(true)
-    setIsSubmitting(false)
+      if (!user || !user.id) {
+        alert("Vui lòng đăng nhập trước khi đặt lịch!")
+        setIsSubmitting(false)
+        return
+      }
 
-    // Redirect after 3 seconds
-    setTimeout(() => {
-      router.push("/appointments")
-    }, 3000)
+      // ✅ Gửi request lưu lịch hẹn
+      const res = await fetch("/api/appointments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user.id,
+          patient_name: bookingData.patientInfo.fullName,
+          patient_phone: bookingData.patientInfo.phone,
+          patient_email: bookingData.patientInfo.email,
+          date_of_birth: bookingData.patientInfo.dateOfBirth,
+          gender: bookingData.patientInfo.gender,
+          symptoms: bookingData.patientInfo.symptoms,
+          doctor_id: bookingData.doctor?.id,
+          specialty: bookingData.specialty,
+          appointment_date: bookingData.date,
+          appointment_time: bookingData.time,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Không thể đặt lịch")
+      }
+
+      setIsSubmitted(true)
+      setTimeout(() => {
+        router.push("/appointments")
+      }, 3000)
+    } catch (err) {
+      console.error("Lỗi khi đặt lịch:", err)
+      alert("Lỗi khi đặt lịch, vui lòng thử lại!")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
+
+
 
   if (isSubmitted) {
     return (
@@ -136,12 +174,12 @@ export default function ConfirmationStep({ bookingData, onPrevious }: Confirmati
           <div className="flex items-center gap-3">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span>
-              {new Date(bookingData.patientInfo.dateOfBirth).toLocaleDateString("vi-VN")} -
+              {new Date(bookingData.patientInfo.dateOfBirth).toLocaleDateString("vi-VN")} -{" "}
               {bookingData.patientInfo.gender === "male"
-                ? " Nam"
+                ? "Nam"
                 : bookingData.patientInfo.gender === "female"
-                  ? " Nữ"
-                  : " Khác"}
+                  ? "Nữ"
+                  : "Khác"}
             </span>
           </div>
 

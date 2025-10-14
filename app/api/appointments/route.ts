@@ -3,44 +3,66 @@ import { query } from "@/lib/db"
 
 export async function POST(req: Request) {
     try {
-        const body = await req.json()
-
         const {
+            user_id,
+            patient_name,
+            patient_phone,
+            patient_email,
+            date_of_birth,
+            gender,
+            symptoms,
+            doctor_id,
             specialty,
-            doctorId,
-            doctorName,
-            doctorTitle,
-            appointmentDate,
-            appointmentTime,
-            price,
-            patientInfo,
-        } = body
+            appointment_date,
+            appointment_time,
+        } = await req.json()
 
-        const result = await query(
-            `INSERT INTO appointments 
-      (specialty, doctor_id, doctor_name, doctor_title, appointment_date, appointment_time, price,
-       patient_name, patient_phone, patient_email, patient_dob, patient_gender, patient_symptoms, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+        if (
+            !patient_name ||
+            !patient_phone ||
+            !patient_email ||
+            !doctor_id ||
+            !specialty ||
+            !appointment_date ||
+            !appointment_time
+        ) {
+            return NextResponse.json({ message: "Thiếu thông tin bắt buộc" }, { status: 400 })
+        }
+
+        await query(
+            `INSERT INTO appointments (
+        user_id,
+        patient_name,
+        patient_phone,
+        patient_email,
+        date_of_birth,
+        gender,
+        symptoms,
+        doctor_id,
+        specialty,
+        appointment_date,
+        appointment_time,
+        status,
+        created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())`,
             [
+                user_id || null,
+                patient_name,
+                patient_phone,
+                patient_email,
+                date_of_birth || null,
+                gender || null,
+                symptoms || null,
+                doctor_id,
                 specialty,
-                doctorId,
-                doctorName,
-                doctorTitle,
-                appointmentDate,
-                appointmentTime,
-                price,
-                patientInfo.fullName,
-                patientInfo.phone,
-                patientInfo.email,
-                patientInfo.dateOfBirth,
-                patientInfo.gender,
-                patientInfo.symptoms || null,
+                appointment_date,
+                appointment_time,
             ]
         )
 
-        return NextResponse.json({ success: true, id: (result as any).insertId })
+        return NextResponse.json({ message: "Đặt lịch thành công" }, { status: 201 })
     } catch (error) {
-        console.error("API appointments error:", error)
-        return NextResponse.json({ error: "Không thể lưu lịch hẹn" }, { status: 500 })
+        console.error("Lỗi khi đặt lịch:", error)
+        return NextResponse.json({ message: "Lỗi máy chủ" }, { status: 500 })
     }
 }

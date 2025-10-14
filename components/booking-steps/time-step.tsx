@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
@@ -18,30 +18,39 @@ interface TimeStepProps {
 }
 
 const timeSlots = [
-  "08:00",
-  "08:30",
-  "09:00",
-  "09:30",
-  "10:00",
-  "10:30",
-  "14:00",
-  "14:30",
-  "15:00",
-  "15:30",
-  "16:00",
-  "16:30",
-  "17:00",
+  "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
+  "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00",
 ]
 
 export default function TimeStep({ bookingData, updateBookingData, onNext, onPrevious }: TimeStepProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     bookingData.date ? new Date(bookingData.date) : undefined,
   )
+  const [bookedTimes, setBookedTimes] = useState<string[]>([])
+
+  // 🔹 Gọi API lấy giờ đã đặt khi chọn ngày
+  useEffect(() => {
+    const fetchBookedTimes = async () => {
+      if (!selectedDate || !bookingData.doctor) return
+      const formattedDate = selectedDate.toISOString().split("T")[0]
+
+      try {
+        const res = await fetch(`/api/appointments/available?doctor_id=${bookingData.doctor.id}&date=${formattedDate}`)
+
+        const data = await res.json()
+        setBookedTimes(data.bookedTimes || [])
+      } catch (error) {
+        console.error("Lỗi khi tải giờ đặt:", error)
+      }
+    }
+
+    fetchBookedTimes()
+  }, [selectedDate, bookingData.doctor])
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date)
     if (date) {
-      updateBookingData({ date: date.toISOString().split("T")[0] })
+      updateBookingData({ date: date.toISOString().split("T")[0], time: "" })
     }
   }
 
@@ -51,7 +60,6 @@ export default function TimeStep({ bookingData, updateBookingData, onNext, onPre
 
   const canProceed = bookingData.date !== "" && bookingData.time !== ""
 
-  // Disable past dates
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -90,7 +98,7 @@ export default function TimeStep({ bookingData, updateBookingData, onNext, onPre
               <div className="grid grid-cols-3 gap-2">
                 {timeSlots.map((time) => {
                   const isSelected = bookingData.time === time
-                  const isAvailable = Math.random() > 0.3 // Simulate availability
+                  const isAvailable = !bookedTimes.includes(time)
 
                   return (
                     <Button

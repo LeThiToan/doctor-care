@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +15,7 @@ export default function ContactForm() {
     name: "",
     email: "",
     phone: "",
-    subject: "",
+    supportType: "",
     message: "",
   })
 
@@ -24,19 +23,28 @@ export default function ContactForm() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
 
-    // Reset form and show success
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      subject: "",
-      message: "",
-    })
-    setIsSubmitting(false)
-    alert("Tin nhắn của bạn đã được gửi thành công! Chúng tôi sẽ phản hồi trong vòng 24 giờ.")
+      if (!res.ok) throw new Error("Gửi thất bại")
+
+      const data = await res.json()
+      if (data.success) {
+        alert("✅ Tin nhắn của bạn đã được gửi thành công! Chúng tôi sẽ phản hồi trong vòng 24 giờ.")
+        setFormData({ name: "", email: "", phone: "", supportType: "", message: "" })
+      } else {
+        alert("❌ Gửi thất bại, vui lòng thử lại sau!")
+      }
+    } catch (error) {
+      alert("❌ Có lỗi xảy ra, vui lòng thử lại.")
+      console.error(error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleChange = (field: string, value: string) => {
@@ -46,7 +54,7 @@ export default function ContactForm() {
     }))
   }
 
-  const canSubmit = formData.name && formData.email && formData.subject && formData.message
+  const canSubmit = formData.name && formData.email && formData.supportType && formData.message
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -99,18 +107,18 @@ export default function ContactForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="subject">Chủ đề *</Label>
-        <Select value={formData.subject} onValueChange={(value) => handleChange("subject", value)} required>
+        <Label htmlFor="supportType">Chủ đề *</Label>
+        <Select value={formData.supportType} onValueChange={(value) => handleChange("supportType", value)} required>
           <SelectTrigger>
             <SelectValue placeholder="Chọn chủ đề" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="booking">Hỗ trợ đặt lịch</SelectItem>
-            <SelectItem value="technical">Vấn đề kỹ thuật</SelectItem>
-            <SelectItem value="billing">Thanh toán</SelectItem>
-            <SelectItem value="complaint">Khiếu nại</SelectItem>
-            <SelectItem value="suggestion">Góp ý</SelectItem>
-            <SelectItem value="other">Khác</SelectItem>
+            <SelectItem value="Hỗ trợ đặt lịch">Hỗ trợ đặt lịch</SelectItem>
+            <SelectItem value="Vấn đề kỹ thuật">Vấn đề kỹ thuật</SelectItem>
+            <SelectItem value="Thanh toán">Thanh toán</SelectItem>
+            <SelectItem value="Khiếu nại">Khiếu nại</SelectItem>
+            <SelectItem value="Góp ý">Góp ý</SelectItem>
+            <SelectItem value="Khác">Khác</SelectItem>
           </SelectContent>
         </Select>
       </div>

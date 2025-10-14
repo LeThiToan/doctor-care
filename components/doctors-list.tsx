@@ -113,7 +113,7 @@ export default function DoctorsList() {
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+            className="px-4 py-2 bg-grays-200 rounded disabled:opacity-50"
           >
             Trước
           </button>
