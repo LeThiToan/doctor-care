@@ -221,30 +221,13 @@ export default function DoctorLoginPage() {
                     </div>
                   </div>
 
-                  <div className="text-center space-y-4">
+                  <div className="text-center">
                     <p className="text-sm text-muted-foreground">
                       Bạn là bệnh nhân?{" "}
                       <Link href="/login" className="text-primary hover:underline font-semibold">
                         Đăng nhập tại đây
                       </Link>
                     </p>
-                    
-                    <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-xl p-4 border border-primary/20">
-                      <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        Tài khoản demo
-                      </h4>
-                      <div className="space-y-2 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Email:</span>
-                          <code className="bg-primary/10 px-2 py-1 rounded text-primary font-mono">bichna@medi.vn</code>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Mật khẩu:</span>
-                          <code className="bg-primary/10 px-2 py-1 rounded text-primary font-mono">123456</code>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
