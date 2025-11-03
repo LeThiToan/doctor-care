@@ -46,6 +46,14 @@ export const api = {
     return response.json()
   },
 
+  getDoctorById: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/doctors/${id}`)
+    if (!response.ok) {
+      throw new Error('Không tìm thấy bác sĩ')
+    }
+    return response.json()
+  },
+
   // Appointments endpoints
   createAppointment: async (appointmentData: any) => {
     const response = await fetch(`${API_BASE_URL}/appointments`, {

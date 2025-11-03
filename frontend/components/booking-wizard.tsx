@@ -71,14 +71,17 @@ export default function BookingWizard({ doctorId: doctorIdParam }: BookingWizard
     },
   })
 
-  // Auto-select doctor if doctor_id is in URL
+  // Auto-select doctor if doctor_id is in URL and skip to time selection
   useEffect(() => {
     const fetchDoctor = async () => {
       if (doctorIdParam) {
         try {
           setLoading(true)
           const doctors = await api.getDoctors()
-          const selectedDoctor = doctors.find((d: Doctor) => d.id === Number(doctorIdParam))
+          // Try both string and number comparison to handle different ID formats
+          const selectedDoctor = doctors.find((d: any) => 
+            String(d.id) === String(doctorIdParam) || Number(d.id) === Number(doctorIdParam)
+          )
           
           if (selectedDoctor) {
             // Convert doctor to match BookingData format
@@ -87,10 +90,10 @@ export default function BookingWizard({ doctorId: doctorIdParam }: BookingWizard
               name: selectedDoctor.name,
               title: selectedDoctor.title,
               experience: selectedDoctor.experience,
-              rating: selectedDoctor.rating,
-              reviews: selectedDoctor.reviews,
+              rating: selectedDoctor.rating || 0,
+              reviews: selectedDoctor.reviews || 0,
               price: selectedDoctor.price,
-              avatar: selectedDoctor.avatar,
+              avatar: selectedDoctor.avatar || "",
               specialty: selectedDoctor.specialty,
             }
             
@@ -101,8 +104,10 @@ export default function BookingWizard({ doctorId: doctorIdParam }: BookingWizard
               doctors: [doctor],
             }))
             
-            // Skip first 2 steps and start at time selection (step 3)
+            // Skip first 2 steps (chọn chuyên khoa, chọn bác sĩ) and start at time selection (step 3)
             setCurrentStep(3)
+          } else {
+            console.warn("Doctor not found with id:", doctorIdParam)
           }
         } catch (error) {
           console.error("Error fetching doctor:", error)

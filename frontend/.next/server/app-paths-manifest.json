@@ -1,7 +1,0 @@
-{
-  "/appointments/page": "app/appointments/page.js",
-  "/login/page": "app/login/page.js",
-  "/doctors/page": "app/doctors/page.js",
-  "/register/page": "app/register/page.js",
-  "/doctor-login/page": "app/doctor-login/page.js"
-}

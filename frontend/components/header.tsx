@@ -14,9 +14,10 @@ export default function Header() {
   const { isLoggedIn, user, logout } = useAuth()
   const { isLoggedIn: isDoctorLoggedIn, doctor, logout: doctorLogout } = useDoctorAuth()
 
-  // Listen for storage events to update auth state
+  // Listen for storage events to update auth state (only between tabs/windows)
   useEffect(() => {
     const handleStorageChange = () => {
+      // Only reload if storage changed from another tab/window
       window.location.reload()
     }
     window.addEventListener('storage', handleStorageChange)

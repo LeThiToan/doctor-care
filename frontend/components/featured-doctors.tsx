@@ -189,7 +189,7 @@ export default function FeaturedDoctors() {
                       <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </Link>
-                  <Link href={`/doctors#doctor-${doctor.id}`}>
+                  <Link href={`/doctor/${doctor.id}`}>
                     <Button 
                       variant="outline"
                       className="w-full group"

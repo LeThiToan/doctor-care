@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
@@ -21,7 +21,14 @@ export default function DoctorLoginPage() {
     password: "",
   })
   const router = useRouter()
-  const { login } = useDoctorAuth()
+  const { login, isLoggedIn, loading } = useDoctorAuth()
+
+  // Redirect nếu đã đăng nhập
+  useEffect(() => {
+    if (!loading && isLoggedIn) {
+      router.push("/doctor-dashboard")
+    }
+  }, [isLoggedIn, loading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,10 +39,11 @@ export default function DoctorLoginPage() {
       const result = await login(formData.email, formData.password)
       
       if (result.success) {
-        // Trigger storage event để cập nhật UI
-        window.dispatchEvent(new Event("storage"))
-        // Chuyển hướng đến trang quản lý bác sĩ
-        router.push("/doctor-dashboard")
+        // Đợi một chút để đảm bảo localStorage đã được set
+        setTimeout(() => {
+          // Chuyển hướng đến trang dashboard và force reload để cập nhật UI
+          window.location.href = "/doctor-dashboard"
+        }, 100)
       } else {
         setError(result.error || "Đăng nhập thất bại")
       }

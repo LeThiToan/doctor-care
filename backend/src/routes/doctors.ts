@@ -37,6 +37,41 @@ router.get('/', async (req, res) => {
     }
 })
 
+// Get doctor by ID
+router.get('/:id', async (req, res) => {
+    try {
+        const { id } = req.params
+
+        const rows = await query(
+            `SELECT id, name, title, specialty, experience, rating, reviews, price, avatar, education, languages, description
+             FROM doctors
+             WHERE id = ?`,
+            [id]
+        ) as any[]
+
+        if (rows.length === 0) {
+            return res.status(404).json({
+                error: "Không tìm thấy bác sĩ"
+            })
+        }
+
+        const doctor = {
+            ...rows[0],
+            education: rows[0].education ? JSON.parse(rows[0].education) : [],
+            languages: rows[0].languages ? JSON.parse(rows[0].languages) : [],
+            rating: rows[0].rating ? Number(rows[0].rating) : 0,
+            reviews: rows[0].reviews ? Number(rows[0].reviews) : 0,
+        }
+
+        res.json(doctor)
+    } catch (error) {
+        console.error("API get doctor by id error:", error)
+        res.status(500).json({
+            error: "Không thể lấy thông tin bác sĩ"
+        })
+    }
+})
+
 // Get unavailable times for a doctor on a specific date
 router.get('/:id/unavailable-times', async (req, res) => {
     try {
