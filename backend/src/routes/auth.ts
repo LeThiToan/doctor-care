@@ -13,7 +13,7 @@ router.post('/login', async (req, res) => {
         const { email, password } = req.body
 
         const rows = await query(
-            "SELECT id, email, password_hash, full_name FROM users WHERE email = ?",
+            "SELECT id, email, password_hash, name FROM users WHERE email = ?",
             [email]
         ) as any[]
 
@@ -37,7 +37,7 @@ router.post('/login', async (req, res) => {
 
         res.json({
             message: "Login successful",
-            user: { id: user.id, email: user.email, name: user.full_name },
+            user: { id: user.id, email: user.email, name: user.name },
             token,
         })
     } catch (err: any) {
@@ -71,8 +71,8 @@ router.post('/register', async (req, res) => {
 
         // Tạo user mới với cấu trúc database hiện có
         await query(
-            "INSERT INTO users (email, password_hash, full_name, phone, date_of_birth, gender, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())",
-            [email, password_hash, name, phone || '', dateOfBirth || '1990-01-01', gender || 'other']
+            "INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)",
+            [email, password_hash, name]
         )
 
         res.status(201).json({ message: "Đăng ký thành công" })

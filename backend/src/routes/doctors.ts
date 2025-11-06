@@ -20,13 +20,41 @@ router.get('/', async (req, res) => {
 
         const rows = await query(sql, params)
 
-        const doctors = (rows as any[]).map((doc) => ({
-            ...doc,
-            education: doc.education ? JSON.parse(doc.education) : [],
-            languages: doc.languages ? JSON.parse(doc.languages) : [],
-            rating: doc.rating ? Number(doc.rating) : 0,
-            reviews: doc.reviews ? Number(doc.reviews) : 0,
-        }))
+        const doctors = (rows as any[]).map((doc) => {
+            // Parse JSON fields safely
+            let education = []
+            let languages = []
+            
+            try {
+                if (doc.education) {
+                    education = typeof doc.education === 'string' 
+                        ? JSON.parse(doc.education) 
+                        : doc.education
+                }
+            } catch (e) {
+                console.error('Error parsing education for doctor:', doc.id, e)
+                education = []
+            }
+            
+            try {
+                if (doc.languages) {
+                    languages = typeof doc.languages === 'string' 
+                        ? JSON.parse(doc.languages) 
+                        : doc.languages
+                }
+            } catch (e) {
+                console.error('Error parsing languages for doctor:', doc.id, e)
+                languages = []
+            }
+            
+            return {
+                ...doc,
+                education,
+                languages,
+                rating: doc.rating ? Number(doc.rating) : 0,
+                reviews: doc.reviews ? Number(doc.reviews) : 0,
+            }
+        })
 
         res.json(doctors)
     } catch (error) {
@@ -55,10 +83,36 @@ router.get('/:id', async (req, res) => {
             })
         }
 
+        // Parse JSON fields safely
+        let education = []
+        let languages = []
+        
+        try {
+            if (rows[0].education) {
+                education = typeof rows[0].education === 'string' 
+                    ? JSON.parse(rows[0].education) 
+                    : rows[0].education
+            }
+        } catch (e) {
+            console.error('Error parsing education for doctor:', id, e)
+            education = []
+        }
+        
+        try {
+            if (rows[0].languages) {
+                languages = typeof rows[0].languages === 'string' 
+                    ? JSON.parse(rows[0].languages) 
+                    : rows[0].languages
+            }
+        } catch (e) {
+            console.error('Error parsing languages for doctor:', id, e)
+            languages = []
+        }
+
         const doctor = {
             ...rows[0],
-            education: rows[0].education ? JSON.parse(rows[0].education) : [],
-            languages: rows[0].languages ? JSON.parse(rows[0].languages) : [],
+            education,
+            languages,
             rating: rows[0].rating ? Number(rows[0].rating) : 0,
             reviews: rows[0].reviews ? Number(rows[0].reviews) : 0,
         }
