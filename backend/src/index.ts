@@ -7,6 +7,7 @@ import appointmentsRoutes from './routes/appointments'
 import authRoutes from './routes/auth'
 import doctorsAuthRoutes from './routes/doctors-auth'
 import contactRoutes from './routes/contact'
+import adminRoutes from './routes/admin'
 
 dotenv.config()
 
@@ -28,6 +29,7 @@ app.use('/api/appointments', appointmentsRoutes)
 app.use('/api', authRoutes)
 app.use('/api/doctors-auth', doctorsAuthRoutes)
 app.use('/api/contact', contactRoutes)
+app.use('/api/admin', adminRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {

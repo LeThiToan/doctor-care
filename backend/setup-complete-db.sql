@@ -19,6 +19,15 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- ============================================
+CREATE TABLE IF NOT EXISTS admin_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
 -- 2. BẢNG SPECIALTIES (Chuyên khoa)
 -- ============================================
 CREATE TABLE IF NOT EXISTS specialties (
@@ -113,6 +122,12 @@ INSERT INTO specialties (name, description, icon, color) VALUES
 ('Y học cổ truyền', 'Y học cổ truyền', 'Leaf', 'text-green-600'),
 ('Vật lý trị liệu', 'Vật lý trị liệu và phục hồi chức năng', 'Activity', 'text-cyan-500')
 ON DUPLICATE KEY UPDATE name=name;
+
+-- Thêm tài khoản admin mẫu (mật khẩu plaintext)
+INSERT INTO admin_users (email, password, name) VALUES
+('admin@medbooking.com', 'password', 'Quản trị viên hệ thống'),
+('manager@medbooking.com', 'password', 'Quản lý điều hành')
+ON DUPLICATE KEY UPDATE password=VALUES(password), name=VALUES(name);
 
 -- Thêm dữ liệu mẫu cho doctors
 INSERT INTO doctors (
