@@ -8,6 +8,16 @@ import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/app/hooks/useAuth"
+import { useToast } from "@/hooks/use-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 interface LoginFormProps {
   redirectTo?: string
@@ -17,12 +27,18 @@ export default function LoginForm({ redirectTo = "/" }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
+  const [resetEmail, setResetEmail] = useState("")
+  const [resetMessage, setResetMessage] = useState<string | null>(null)
+  const [resetError, setResetError] = useState<string | null>(null)
+  const [isResetLoading, setIsResetLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, forgotPassword } = useAuth()
+  const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +72,50 @@ export default function LoginForm({ redirectTo = "/" }: LoginFormProps) {
       ...prev,
       [e.target.name]: e.target.value,
     }))
+  }
+
+  const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsResetLoading(true)
+    setResetError(null)
+    setResetMessage(null)
+
+    try {
+      const result = await forgotPassword(resetEmail)
+      if (result.success) {
+        setResetMessage("Chúng tôi đã gửi mật khẩu mới tới email của bạn. Vui lòng kiểm tra hộp thư đến.")
+        toast({
+          title: "Đã gửi yêu cầu",
+          description: "Mật khẩu mới đã được gửi tới hộp thư của bạn.",
+        })
+      } else {
+        setResetError(result.error || "Không thể gửi yêu cầu đặt lại mật khẩu")
+        toast({
+          title: "Gửi yêu cầu thất bại",
+          description: result.error || "Không thể gửi yêu cầu đặt lại mật khẩu",
+          variant: "destructive",
+        })
+      }
+    } catch (err) {
+      console.error("Forgot password error:", err)
+      setResetError("Lỗi kết nối server")
+      toast({
+        title: "Lỗi kết nối",
+        description: "Không thể kết nối tới máy chủ. Vui lòng thử lại sau.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsResetLoading(false)
+    }
+  }
+
+  const handleOpenResetDialog = (open: boolean) => {
+    setIsResetDialogOpen(open)
+    if (open) {
+      setResetEmail(formData.email)
+      setResetMessage(null)
+      setResetError(null)
+    }
   }
 
   return (
@@ -108,9 +168,44 @@ export default function LoginForm({ redirectTo = "/" }: LoginFormProps) {
           <input type="checkbox" className="rounded border-border" />
           <span className="text-muted-foreground">Ghi nhớ đăng nhập</span>
         </label>
-        <Button variant="link" className="p-0 h-auto text-sm">
-          Quên mật khẩu?
-        </Button>
+        <Dialog open={isResetDialogOpen} onOpenChange={handleOpenResetDialog}>
+          <DialogTrigger asChild>
+            <Button variant="link" type="button" className="p-0 h-auto text-sm">
+              Quên mật khẩu?
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Quên mật khẩu</DialogTitle>
+              <DialogDescription>
+                Nhập email đã đăng ký. Nếu email tồn tại, hệ thống sẽ gửi mật khẩu mới tới hộp thư của bạn.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                />
+              </div>
+              {resetMessage && <p className="text-sm text-green-600">{resetMessage}</p>}
+              {resetError && <p className="text-sm text-red-500">{resetError}</p>}
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button type="button" variant="outline" onClick={() => handleOpenResetDialog(false)}>
+                  Đóng
+                </Button>
+                <Button type="submit" disabled={isResetLoading}>
+                  {isResetLoading ? "Đang xử lý..." : "Gửi yêu cầu"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Button type="submit" className="w-full" disabled={isLoading}>

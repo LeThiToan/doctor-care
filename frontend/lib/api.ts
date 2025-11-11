@@ -24,6 +24,28 @@ export const api = {
     return response.json()
   },
 
+  forgotPassword: async (email: string) => {
+    const response = await fetch(`${API_BASE_URL}/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    })
+    return response.json()
+  },
+
+  changePassword: async (email: string, currentPassword: string, newPassword: string) => {
+    const response = await fetch(`${API_BASE_URL}/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, currentPassword, newPassword }),
+    })
+    return response.json()
+  },
+
   logout: async () => {
     const response = await fetch(`${API_BASE_URL}/logout`, {
       method: 'POST',

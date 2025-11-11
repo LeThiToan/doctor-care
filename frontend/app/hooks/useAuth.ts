@@ -49,6 +49,39 @@ export function useAuth() {
         }
     }
 
+    const forgotPassword = async (email: string) => {
+        try {
+            const response = await api.forgotPassword(email)
+            if (response.error) {
+                return { success: false, error: response.error }
+            }
+            return { 
+                success: true, 
+                message: response.message || "Nếu email tồn tại, chúng tôi đã gửi mật khẩu mới tới hộp thư đăng ký" 
+            }
+        } catch (error) {
+            return { success: false, error: "Không thể gửi yêu cầu đặt lại mật khẩu" }
+        }
+    }
+
+    const changePassword = async (currentPassword: string, newPassword: string) => {
+        try {
+            if (!user?.email) {
+                return { success: false, error: "Không tìm thấy email người dùng" }
+            }
+
+            const response = await api.changePassword(user.email, currentPassword, newPassword)
+
+            if (response.error) {
+                return { success: false, error: response.error }
+            }
+
+            return { success: true, message: response.message || "Đổi mật khẩu thành công" }
+        } catch (error) {
+            return { success: false, error: "Không thể đổi mật khẩu. Vui lòng thử lại." }
+        }
+    }
+
     const logout = async () => {
         try {
             await api.logout()
@@ -68,6 +101,8 @@ export function useAuth() {
         loading, 
         login, 
         register, 
+        forgotPassword,
+        changePassword,
         logout 
     }
 }

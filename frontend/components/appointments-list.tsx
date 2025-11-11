@@ -234,6 +234,13 @@ export default function AppointmentsList() {
           {filterAppointments("all").map((appointment) => (
             <AppointmentCard key={appointment.id} appointment={appointment} />
           ))}
+          {filterAppointments("all").length === 0 && (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">Hiện tại chưa có lịch hẹn nào</p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="pending" className="space-y-4">

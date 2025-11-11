@@ -192,3 +192,78 @@ export const sendAppointmentConfirmationEmail = async (
     }
 }
 
+export const sendPasswordResetEmail = async (
+    recipientEmail: string,
+    recipientName: string,
+    newPassword: string
+) => {
+    try {
+        const transporter = createTransporter()
+        if (!transporter) {
+            console.error('❌ Không thể tạo email transporter - thiếu cấu hình email')
+            return { success: false, error: 'Email chưa được cấu hình' }
+        }
+
+        const adminEmail = process.env.EMAIL_USER
+        if (!adminEmail) {
+            throw new Error('EMAIL_USER chưa được cấu hình')
+        }
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html lang="vi">
+            <head>
+                <meta charset="UTF-8" />
+                <style>
+                    body { font-family: Arial, sans-serif; background-color: #f9fafb; margin: 0; padding: 24px; color: #111827; }
+                    .container { max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 12px; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1); overflow: hidden; }
+                    .header { background: linear-gradient(135deg, #1d4ed8, #3b82f6); color: #ffffff; padding: 24px 32px; }
+                    .header h1 { margin: 0; font-size: 22px; }
+                    .content { padding: 24px 32px; line-height: 1.6; }
+                    .password-box { margin: 24px 0; padding: 18px 24px; background: #f1f5f9; border-radius: 8px; font-size: 18px; letter-spacing: 2px; font-weight: 600; color: #1d4ed8; text-align: center; border: 1px dashed #2563eb; }
+                    .note { margin-top: 24px; padding: 16px; background: #eff6ff; border-radius: 10px; border-left: 4px solid #2563eb; font-size: 14px; color: #1e3a8a; }
+                    .footer { padding: 16px 32px 24px; background: #f3f4f6; font-size: 13px; color: #6b7280; text-align: center; }
+                    a { color: #2563eb; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Yêu cầu đặt lại mật khẩu</h1>
+                    </div>
+                    <div class="content">
+                        <p>Xin chào <strong>${recipientName || recipientEmail}</strong>,</p>
+                        <p>Chúng tôi đã tạo mật khẩu mới cho tài khoản MedBooking của bạn theo yêu cầu quên mật khẩu. Vui lòng sử dụng mật khẩu bên dưới để đăng nhập và đổi lại mật khẩu khi thuận tiện.</p>
+                        <div class="password-box">
+                            ${newPassword}
+                        </div>
+                        <div class="note">
+                            Nếu bạn không yêu cầu đặt lại mật khẩu, hãy liên hệ ngay với bộ phận hỗ trợ của MedBooking để được giúp đỡ.
+                        </div>
+                    </div>
+                    <div class="footer">
+                        Trân trọng,<br />
+                        Đội ngũ MedBooking
+                    </div>
+                </div>
+            </body>
+            </html>
+        `
+
+        const mailOptions = {
+            from: `"MedBooking" <${adminEmail}>`,
+            to: recipientEmail,
+            replyTo: adminEmail,
+            subject: '🔑 Mật khẩu mới cho tài khoản MedBooking',
+            html: htmlContent,
+        }
+
+        const info = await transporter.sendMail(mailOptions)
+        console.log('✅ Email reset password sent:', info.messageId)
+        return { success: true, messageId: info.messageId }
+    } catch (error: any) {
+        console.error('❌ Error sending reset password email:', error)
+        return { success: false, error: error.message }
+    }
+}
+

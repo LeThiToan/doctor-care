@@ -67,6 +67,11 @@ export default function Header() {
                 <Link href="/appointments" className="text-foreground hover:text-primary transition-colors font-medium">
                   Lịch hẹn
                 </Link>
+                {isLoggedIn && (
+                  <Link href="/profile" className="text-foreground hover:text-primary transition-colors font-medium">
+                    Hồ sơ
+                  </Link>
+                )}
               </>
             )}
             {isDoctorLoggedIn && (
@@ -93,10 +98,10 @@ export default function Header() {
               </div>
             ) : isLoggedIn ? (
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-foreground bg-muted/50 px-3 py-2 rounded-lg">
+                <Link href="/profile" className="flex items-center gap-2 text-foreground bg-muted/50 px-3 py-2 rounded-lg hover:bg-muted transition-colors">
                   <User className="h-4 w-4" />
                   <span className="text-sm font-medium">{user?.name || user?.email}</span>
-                </div>
+                </Link>
                 <Button variant="outline" onClick={handleLogout} size="sm">
                   <LogOut className="h-4 w-4 mr-2" />
                   Đăng xuất
@@ -142,6 +147,11 @@ export default function Header() {
                   <Link href="/appointments" className="text-foreground hover:text-primary transition-colors py-2 font-medium">
                     Lịch hẹn
                   </Link>
+                  {isLoggedIn && (
+                    <Link href="/profile" className="text-foreground hover:text-primary transition-colors py-2 font-medium">
+                      Hồ sơ
+                    </Link>
+                  )}
                 </>
               )}
               {isDoctorLoggedIn && (
@@ -167,10 +177,13 @@ export default function Header() {
                   </>
                 ) : isLoggedIn ? (
                   <>
-                    <div className="flex items-center gap-2 text-foreground p-3 bg-muted/50 rounded-lg">
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-2 text-foreground p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                    >
                       <User className="h-4 w-4" />
                       <span className="text-sm font-medium">{user?.name || user?.email}</span>
-                    </div>
+                    </Link>
                     <Button variant="outline" onClick={handleLogout} className="w-full">
                       <LogOut className="h-4 w-4 mr-2" />
                       Đăng xuất
