@@ -217,6 +217,7 @@ router.post('/doctors', requireAdmin, async (req, res) => {
     const doctorId = result.insertId
 
     if (createDoctorAccount && email && doctorPassword) {
+      const passwordHash = await bcrypt.hash(doctorPassword, 10)
       await query(
         `INSERT INTO doctor_account (
           name,
@@ -228,7 +229,7 @@ router.post('/doctors', requireAdmin, async (req, res) => {
         [
           name,
           email,
-          doctorPassword,
+          passwordHash,
           doctorId,
         ]
       )
@@ -382,8 +383,9 @@ router.put('/doctors/:id', requireAdmin, async (req, res) => {
           accountValues.push(email || null)
         }
         if (password !== undefined) {
+          const passwordHash = password ? await bcrypt.hash(password, 10) : null
           accountFields.push('password = ?')
-          accountValues.push(password || null)
+          accountValues.push(passwordHash)
         }
 
         if (accountFields.length > 0) {
@@ -394,6 +396,7 @@ router.put('/doctors/:id', requireAdmin, async (req, res) => {
           )
         }
       } else if (email && password) {
+        const passwordHash = await bcrypt.hash(password, 10)
         await query(
           `INSERT INTO doctor_account (name, email, password, doctor_id, is_active)
            VALUES (
@@ -403,7 +406,7 @@ router.put('/doctors/:id', requireAdmin, async (req, res) => {
              ?,
              TRUE
            )`,
-          [id, email, password, id]
+          [id, email, passwordHash, id]
         )
       }
     }

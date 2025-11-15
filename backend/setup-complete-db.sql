@@ -1,10 +1,16 @@
 -- ============================================
--- File SQL đầy đủ cho database medbooking
--- Bao gồm tất cả các bảng và dữ liệu mẫu
+-- FILE SQL HOÀN CHỈNH CHO DATABASE MEDBOOKING
+-- Phiên bản: 2.0
+-- Ngày cập nhật: 2024
+-- 
+-- Mô tả: 
+-- - Tất cả password đã được hash bằng bcrypt (salt rounds: 10)
+-- - Password mặc định cho tất cả tài khoản: "password"
+-- - Hash bcrypt của "password": $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
 -- ============================================
 
 -- Tạo database nếu chưa có
-CREATE DATABASE IF NOT EXISTS medbooking;
+CREATE DATABASE IF NOT EXISTS medbooking CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE medbooking;
 
 -- ============================================
@@ -13,33 +19,38 @@ USE medbooking;
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL COMMENT 'Password đã được hash bằng bcrypt',
     name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ============================================
+-- 2. BẢNG ADMIN_USERS (Quản trị viên)
 -- ============================================
 CREATE TABLE IF NOT EXISTS admin_users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL COMMENT 'Password plain text (có thể hash sau)',
     name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- 2. BẢNG SPECIALTIES (Chuyên khoa)
+-- 3. BẢNG SPECIALTIES (Chuyên khoa)
 -- ============================================
 CREATE TABLE IF NOT EXISTS specialties (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     icon VARCHAR(100),
-    color VARCHAR(50)
-);
+    color VARCHAR(50),
+    INDEX idx_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- 3. BẢNG DOCTORS (Bác sĩ)
+-- 4. BẢNG DOCTORS (Bác sĩ)
 -- ============================================
 CREATE TABLE IF NOT EXISTS doctors (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -55,29 +66,35 @@ CREATE TABLE IF NOT EXISTS doctors (
     languages JSON,
     description TEXT,
     email VARCHAR(255) UNIQUE,
-    password_hash VARCHAR(255),
+    password_hash VARCHAR(255) COMMENT 'Password hash (nếu có)',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_specialty (specialty),
+    INDEX idx_email (email),
+    INDEX idx_is_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- 4. BẢNG DOCTOR_ACCOUNT (Tài khoản Bác sĩ)
+-- 5. BẢNG DOCTOR_ACCOUNT (Tài khoản Bác sĩ)
 -- ============================================
 CREATE TABLE IF NOT EXISTS doctor_account (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL COMMENT 'Password đã được hash bằng bcrypt',
     doctor_id INT NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
-);
+    FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE,
+    INDEX idx_email (email),
+    INDEX idx_doctor_id (doctor_id),
+    INDEX idx_is_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- 5. BẢNG APPOINTMENTS (Lịch hẹn)
+-- 6. BẢNG APPOINTMENTS (Lịch hẹn)
 -- ============================================
 CREATE TABLE IF NOT EXISTS appointments (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -93,18 +110,33 @@ CREATE TABLE IF NOT EXISTS appointments (
     appointment_date DATE NOT NULL,
     appointment_time TIME NOT NULL,
     status ENUM('pending', 'confirmed', 'completed', 'cancelled') DEFAULT 'pending',
-    rating INT,
+    rating INT COMMENT 'Đánh giá từ 1-5',
     cancel_reason TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE SET NULL
-);
+    FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE SET NULL,
+    INDEX idx_user_id (user_id),
+    INDEX idx_doctor_id (doctor_id),
+    INDEX idx_appointment_date (appointment_date),
+    INDEX idx_status (status),
+    INDEX idx_doctor_date (doctor_id, appointment_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
 -- DỮ LIỆU MẪU
 -- ============================================
 
--- Thêm dữ liệu mẫu cho specialties
+-- Xóa dữ liệu cũ (nếu cần)
+-- DELETE FROM appointments;
+-- DELETE FROM doctor_account;
+-- DELETE FROM doctors;
+-- DELETE FROM users;
+-- DELETE FROM admin_users;
+-- DELETE FROM specialties;
+
+-- ============================================
+-- DỮ LIỆU MẪU: SPECIALTIES (Chuyên khoa)
+-- ============================================
 INSERT INTO specialties (name, description, icon, color) VALUES
 ('Tim mạch', 'Chuyên khoa tim mạch và huyết áp', 'Heart', 'text-red-500'),
 ('Nhi khoa', 'Chuyên khoa trẻ em', 'Baby', 'text-blue-500'),
@@ -121,15 +153,21 @@ INSERT INTO specialties (name, description, icon, color) VALUES
 ('Răng hàm mặt', 'Chuyên khoa răng hàm mặt', 'Smile', 'text-teal-500'),
 ('Y học cổ truyền', 'Y học cổ truyền', 'Leaf', 'text-green-600'),
 ('Vật lý trị liệu', 'Vật lý trị liệu và phục hồi chức năng', 'Activity', 'text-cyan-500')
-ON DUPLICATE KEY UPDATE name=name;
+ON DUPLICATE KEY UPDATE name=VALUES(name);
 
--- Thêm tài khoản admin mẫu (mật khẩu plaintext)
+-- ============================================
+-- DỮ LIỆU MẪU: ADMIN_USERS (Quản trị viên)
+-- Password: "password" (plain text - có thể hash sau)
+-- ============================================
 INSERT INTO admin_users (email, password, name) VALUES
 ('admin@medbooking.com', 'password', 'Quản trị viên hệ thống'),
 ('manager@medbooking.com', 'password', 'Quản lý điều hành')
 ON DUPLICATE KEY UPDATE password=VALUES(password), name=VALUES(name);
 
--- Thêm dữ liệu mẫu cho doctors
+-- ============================================
+-- DỮ LIỆU MẪU: DOCTORS (Bác sĩ)
+-- Password hash trong password_hash: $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
+-- ============================================
 INSERT INTO doctors (
     name, 
     title, 
@@ -159,7 +197,7 @@ INSERT INTO doctors (
     '["Tiếng Việt", "Tiếng Anh"]', 
     'Chuyên gia tim mạch với hơn 15 năm kinh nghiệm',
     'bs.nguyenvanan@medbooking.com',
-    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', -- password: password
+    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
     TRUE
 ),
 (
@@ -175,7 +213,7 @@ INSERT INTO doctors (
     '["Tiếng Việt", "Tiếng Anh"]', 
     'Bác sĩ nhi khoa tận tâm với trẻ em',
     'bs.tranthibinh@medbooking.com',
-    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', -- password: password
+    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
     TRUE
 ),
 (
@@ -191,7 +229,7 @@ INSERT INTO doctors (
     '["Tiếng Việt", "Tiếng Anh", "Tiếng Pháp"]', 
     'Chuyên gia thần kinh hàng đầu Việt Nam',
     'pgs.leminhcuong@medbooking.com',
-    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', -- password: password
+    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
     TRUE
 ),
 (
@@ -546,39 +584,92 @@ INSERT INTO doctors (
     '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
     TRUE
 )
-ON DUPLICATE KEY UPDATE name=name;
+ON DUPLICATE KEY UPDATE name=VALUES(name);
 
--- Thêm dữ liệu mẫu cho doctor_account
--- Map với các bác sĩ đã có trong bảng doctors (id: 1-23)
+-- ============================================
+-- DỮ LIỆU MẪU: DOCTOR_ACCOUNT (Tài khoản Bác sĩ)
+-- Password đã được hash: $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
+-- Password gốc: "password"
+-- Map với các bác sĩ đã có trong bảng doctors (id: 1-25)
+-- ============================================
 INSERT INTO doctor_account (name, email, password, doctor_id, is_active) VALUES
-('BS. Nguyễn Văn An', 'bs.nguyenvanan@medbooking.com', 'password', 1, TRUE),
-('BS. Trần Thị Bình', 'bs.tranthibinh@medbooking.com', 'password', 2, TRUE),
-('PGS.TS. Lê Minh Cường', 'pgs.leminhcuong@medbooking.com', 'password', 3, TRUE),
-('TS.BS. Phạm Thị Dung', 'ts.phamthidung@medbooking.com', 'password', 4, TRUE),
-('BS. Hoàng Văn Đức', 'bs.hoangvanduc@medbooking.com', 'password', 5, TRUE),
-('BS. Nguyễn Thị Hoa', 'bs.nguyenthihoa@medbooking.com', 'password', 6, TRUE),
-('PGS.TS. Trần Văn Hùng', 'pgs.tranvanhung@medbooking.com', 'password', 7, TRUE),
-('BS. Lê Thị Lan', 'bs.lethilan@medbooking.com', 'password', 8, TRUE),
-('TS.BS. Phạm Văn Long', 'ts.phamvanlong@medbooking.com', 'password', 9, TRUE),
-('GS.TS. Nguyễn Thị Mai', 'gs.nguyenthimai@medbooking.com', 'password', 10, TRUE),
-('BS. Trần Văn Nam', 'bs.tranvannam@medbooking.com', 'password', 11, TRUE),
-('TS.BS. Lê Thị Oanh', 'ts.lethioanh@medbooking.com', 'password', 12, TRUE),
-('BS. Phạm Văn Phong', 'bs.phamvanphong@medbooking.com', 'password', 13, TRUE),
-('BS. Nguyễn Thị Quỳnh', 'bs.nguyenthiquynh@medbooking.com', 'password', 14, TRUE),
-('BS. Trần Văn Sơn', 'bs.tranvanson@medbooking.com', 'password', 15, TRUE),
-('TS.BS. Lê Văn Tài', 'ts.levantai@medbooking.com', 'password', 16, TRUE),
-('BS. Phạm Thị Uyên', 'bs.phamthiuyen@medbooking.com', 'password', 17, TRUE),
-('PGS.TS. Nguyễn Văn Vinh', 'pgs.nguyenvanvinh@medbooking.com', 'password', 18, TRUE),
-('BS. Trần Thị Xuân', 'bs.tranthixuan@medbooking.com', 'password', 19, TRUE),
-('BS. Lê Văn Yên', 'bs.levanyen@medbooking.com', 'password', 20, TRUE),
-('TS.BS. Phạm Thị An', 'ts.phamthian@medbooking.com', 'password', 21, TRUE),
-('BS. Nguyễn Văn Bình', 'bs.nguyenvanbinh@medbooking.com', 'password', 22, TRUE),
-('PGS.TS. Trần Thị Cẩm', 'pgs.tranthicam@medbooking.com', 'password', 23, TRUE),
-('BS. Lê Văn Dũng', 'bs.levandung@medbooking.com', 'password', 24, TRUE),
-('TS.BS. Phạm Thị Em', 'ts.phamthiem@medbooking.com', 'password', 25, TRUE)
-ON DUPLICATE KEY UPDATE name=name;
+('BS. Nguyễn Văn An', 'bs.nguyenvanan@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, TRUE),
+('BS. Trần Thị Bình', 'bs.tranthibinh@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, TRUE),
+('PGS.TS. Lê Minh Cường', 'pgs.leminhcuong@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, TRUE),
+('TS.BS. Phạm Thị Dung', 'ts.phamthidung@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 4, TRUE),
+('BS. Hoàng Văn Đức', 'bs.hoangvanduc@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 5, TRUE),
+('BS. Nguyễn Thị Hoa', 'bs.nguyenthihoa@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 6, TRUE),
+('PGS.TS. Trần Văn Hùng', 'pgs.tranvanhung@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 7, TRUE),
+('BS. Lê Thị Lan', 'bs.lethilan@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 8, TRUE),
+('TS.BS. Phạm Văn Long', 'ts.phamvanlong@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 9, TRUE),
+('GS.TS. Nguyễn Thị Mai', 'gs.nguyenthimai@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 10, TRUE),
+('BS. Trần Văn Nam', 'bs.tranvannam@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 11, TRUE),
+('TS.BS. Lê Thị Oanh', 'ts.lethioanh@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 12, TRUE),
+('BS. Phạm Văn Phong', 'bs.phamvanphong@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 13, TRUE),
+('BS. Nguyễn Thị Quỳnh', 'bs.nguyenthiquynh@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 14, TRUE),
+('BS. Trần Văn Sơn', 'bs.tranvanson@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 15, TRUE),
+('TS.BS. Lê Văn Tài', 'ts.levantai@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 16, TRUE),
+('BS. Phạm Thị Uyên', 'bs.phamthiuyen@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 17, TRUE),
+('PGS.TS. Nguyễn Văn Vinh', 'pgs.nguyenvanvinh@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 18, TRUE),
+('BS. Trần Thị Xuân', 'bs.tranthixuan@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 19, TRUE),
+('BS. Lê Văn Yên', 'bs.levanyen@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 20, TRUE),
+('TS.BS. Phạm Thị An', 'ts.phamthian@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 21, TRUE),
+('BS. Nguyễn Văn Bình', 'bs.nguyenvanbinh@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 22, TRUE),
+('PGS.TS. Trần Thị Cẩm', 'pgs.tranthicam@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 23, TRUE),
+('BS. Lê Văn Dũng', 'bs.levandung@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 24, TRUE),
+('TS.BS. Phạm Thị Em', 'ts.phamthiem@medbooking.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 25, TRUE)
+ON DUPLICATE KEY UPDATE name=VALUES(name), password=VALUES(password);
+
+-- ============================================
+-- DỮ LIỆU MẪU: USERS (Bệnh nhân)
+-- Password đã được hash: $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
+-- Password gốc: "password"
+-- ============================================
+INSERT INTO users (email, password_hash, name) VALUES
+('patient1@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Nguyễn Văn A'),
+('patient2@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Trần Thị B'),
+('patient3@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Lê Văn C'),
+('patient4@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Phạm Thị D'),
+('patient5@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Hoàng Văn E')
+ON DUPLICATE KEY UPDATE name=VALUES(name);
+
+-- ============================================
+-- DỮ LIỆU MẪU: APPOINTMENTS (Lịch hẹn)
+-- Một số lịch hẹn mẫu để test
+-- ============================================
+INSERT INTO appointments (
+    user_id,
+    patient_name,
+    patient_phone,
+    patient_email,
+    date_of_birth,
+    gender,
+    symptoms,
+    doctor_id,
+    specialty,
+    appointment_date,
+    appointment_time,
+    status
+) VALUES
+(1, 'Nguyễn Văn A', '0901234567', 'patient1@example.com', '1990-01-15', 'male', 'Đau đầu, chóng mặt', 1, 'Tim mạch', DATE_ADD(CURDATE(), INTERVAL 3 DAY), '09:00:00', 'pending'),
+(2, 'Trần Thị B', '0902345678', 'patient2@example.com', '1985-05-20', 'female', 'Sốt, ho', 2, 'Nhi khoa', DATE_ADD(CURDATE(), INTERVAL 5 DAY), '10:30:00', 'confirmed'),
+(3, 'Lê Văn C', '0903456789', 'patient3@example.com', '1992-08-10', 'male', 'Đau bụng', 5, 'Tiêu hóa', DATE_ADD(CURDATE(), INTERVAL 7 DAY), '14:00:00', 'pending'),
+(1, 'Nguyễn Văn A', '0901234567', 'patient1@example.com', '1990-01-15', 'male', 'Khám định kỳ', 3, 'Thần kinh', DATE_SUB(CURDATE(), INTERVAL 10 DAY), '11:00:00', 'completed'),
+(4, 'Phạm Thị D', '0904567890', 'patient4@example.com', '1988-03-25', 'female', 'Khám sức khỏe', 4, 'Sản phụ khoa', DATE_ADD(CURDATE(), INTERVAL 2 DAY), '08:30:00', 'confirmed')
+ON DUPLICATE KEY UPDATE patient_name=VALUES(patient_name);
+
+-- ============================================
+-- GHI CHÚ QUAN TRỌNG
+-- ============================================
+-- 1. Tất cả password trong bảng doctor_account và users đã được hash bằng bcrypt
+-- 2. Password mặc định cho tất cả tài khoản: "password"
+-- 3. Hash bcrypt: $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
+-- 4. Để tạo hash mới, sử dụng: bcrypt.hash(password, 10)
+-- 5. Để so sánh password, sử dụng: bcrypt.compare(password, hash)
+-- 6. Nếu database đã có dữ liệu với password plain text, chạy migration script:
+--    npm run migrate:doctor-passwords
+-- ============================================
 
 -- ============================================
 -- KẾT THÚC
 -- ============================================
-

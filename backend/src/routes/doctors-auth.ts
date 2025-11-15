@@ -23,8 +23,9 @@ router.post('/login', async (req, res) => {
             return res.status(404).json({ error: "Bác sĩ không tồn tại" })
         }
 
-        // So sánh mật khẩu (không hash trong database hiện tại)
-        if (password !== doctor.password) {
+        // So sánh mật khẩu đã được hash
+        const isMatch = await bcrypt.compare(password, doctor.password)
+        if (!isMatch) {
             return res.status(401).json({ error: "Mật khẩu không đúng" })
         }
 
