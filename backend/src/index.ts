@@ -1,6 +1,10 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+
+// Load environment variables FIRST before importing routes
+dotenv.config()
+
 import specialtiesRoutes from './routes/specialties'
 import doctorsRoutes from './routes/doctors'
 import appointmentsRoutes from './routes/appointments'
@@ -8,8 +12,7 @@ import authRoutes from './routes/auth'
 import doctorsAuthRoutes from './routes/doctors-auth'
 import contactRoutes from './routes/contact'
 import adminRoutes from './routes/admin'
-
-dotenv.config()
+import aiRoutes from './routes/ai'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -30,6 +33,7 @@ app.use('/api', authRoutes)
 app.use('/api/doctors-auth', doctorsAuthRoutes)
 app.use('/api/contact', contactRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/ai', aiRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {
