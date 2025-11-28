@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
+import { AIChatboxWrapper } from "@/components/ai-chatbox-wrapper"
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -30,6 +31,7 @@ export default function RootLayout({
           {children}
           <Analytics />
           <Toaster />
+          <AIChatboxWrapper />
         </Suspense>
       </body>
     </html>
