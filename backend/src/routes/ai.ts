@@ -106,9 +106,19 @@ async function getGeminiResponse(message: string, conversationHistory: any[]): P
             console.error('Error details:', error.errorDetails)
         }
         
-        // Return error message for quota exceeded
+        // Handle specific error cases
         if (error.status === 429) {
             return 'Xin lỗi, tôi đã vượt quá giới hạn sử dụng API. Vui lòng thử lại sau một chút, hoặc kiểm tra quota và billing tại https://ai.dev/usage?tab=rate-limit'
+        }
+        
+        // Handle leaked API key error (403 Forbidden)
+        if (error.status === 403 && error.message && error.message.includes('leaked')) {
+            return '⚠️ API key đã bị báo là rò rỉ (leaked). Vui lòng tạo API key mới tại https://aistudio.google.com/apikey và cập nhật GEMINI_API_KEY trong file .env của backend. Sau đó khởi động lại server.'
+        }
+        
+        // Handle other 403 errors
+        if (error.status === 403) {
+            return '⚠️ API key không hợp lệ hoặc không có quyền truy cập. Vui lòng kiểm tra lại GEMINI_API_KEY trong file .env hoặc tạo API key mới tại https://aistudio.google.com/apikey'
         }
         
         return null
@@ -145,9 +155,12 @@ router.post('/chat', async (req, res) => {
             })
         }
         
-        // Check if response is an error message (quota exceeded or other API errors)
-        if (geminiResponse.includes('vượt quá giới hạn') || geminiResponse.includes('quota')) {
-            // Return as success but with error message in response
+        // Check if response is an error message (quota exceeded, leaked API key, or other API errors)
+        if (geminiResponse.includes('vượt quá giới hạn') || 
+            geminiResponse.includes('quota') || 
+            geminiResponse.includes('API key') ||
+            geminiResponse.includes('⚠️')) {
+            // Return as success but with error message in response so user can see it
             return res.status(200).json({
                 success: true,
                 response: geminiResponse
