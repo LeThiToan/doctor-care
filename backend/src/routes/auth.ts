@@ -119,9 +119,15 @@ router.post('/forgot-password', async (req, res) => {
         const emailResult = await sendPasswordResetEmail(email, user.name || email, newPassword)
 
         if (!emailResult.success) {
-            console.error('Failed to send password reset email:', emailResult.error)
-            return res.status(500).json({ error: "Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau." })
+            console.error('❌ Failed to send password reset email:', emailResult.error)
+            // Vẫn trả về success để không tiết lộ thông tin về user tồn tại
+            // Nhưng log lỗi để admin biết
+            return res.status(500).json({ 
+                error: emailResult.error || "Không thể gửi email đặt lại mật khẩu. Vui lòng kiểm tra cấu hình email hoặc thử lại sau." 
+            })
         }
+
+        console.log(`✅ Password reset email sent successfully to ${email}`)
 
         res.json({ message: "Nếu email tồn tại, chúng tôi đã gửi mật khẩu mới tới hộp thư đăng ký" })
     } catch (err: any) {

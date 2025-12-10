@@ -198,16 +198,25 @@ export const sendPasswordResetEmail = async (
     newPassword: string
 ) => {
     try {
+        console.log(`📧 Bắt đầu gửi email reset password đến ${recipientEmail}...`)
+        
         const transporter = createTransporter()
         if (!transporter) {
             console.error('❌ Không thể tạo email transporter - thiếu cấu hình email')
-            return { success: false, error: 'Email chưa được cấu hình' }
+            console.error('   Kiểm tra EMAIL_USER và EMAIL_PASS trong file .env')
+            return { success: false, error: 'Email chưa được cấu hình. Vui lòng kiểm tra EMAIL_USER và EMAIL_PASS trong file .env' }
         }
 
         const adminEmail = process.env.EMAIL_USER
         if (!adminEmail) {
+            console.error('❌ EMAIL_USER chưa được cấu hình trong .env')
             throw new Error('EMAIL_USER chưa được cấu hình')
         }
+
+        console.log(`   From: ${adminEmail}`)
+        console.log(`   To: ${recipientEmail}`)
+        console.log(`   Host: ${process.env.EMAIL_HOST || 'smtp.gmail.com'}`)
+        console.log(`   Port: ${process.env.EMAIL_PORT || '587'}`)
 
         const htmlContent = `
             <!DOCTYPE html>
@@ -258,12 +267,23 @@ export const sendPasswordResetEmail = async (
             html: htmlContent,
         }
 
+        console.log('   Đang gửi email...')
         const info = await transporter.sendMail(mailOptions)
-        console.log('✅ Email reset password sent:', info.messageId)
+        console.log('✅ Email reset password sent successfully!')
+        console.log(`   Message ID: ${info.messageId}`)
+        console.log(`   Response: ${info.response}`)
         return { success: true, messageId: info.messageId }
     } catch (error: any) {
-        console.error('❌ Error sending reset password email:', error)
-        return { success: false, error: error.message }
+        console.error('❌ Error sending reset password email:')
+        console.error('   Error message:', error.message)
+        console.error('   Error code:', error.code)
+        if (error.response) {
+            console.error('   SMTP Response:', error.response)
+        }
+        if (error.responseCode) {
+            console.error('   Response Code:', error.responseCode)
+        }
+        return { success: false, error: error.message || 'Không thể gửi email. Vui lòng kiểm tra cấu hình email.' }
     }
 }
 
