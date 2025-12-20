@@ -23,9 +23,17 @@ const timeSlots = [
   "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00",
 ]
 
+// Format date theo local timezone để tránh lệch ngày
+const formatDateToLocalString = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export default function TimeStep({ bookingData, updateBookingData, onNext, onPrevious }: TimeStepProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    bookingData.date ? new Date(bookingData.date) : undefined,
+    bookingData.date ? new Date(bookingData.date + 'T12:00:00') : undefined,
   )
   const [bookedTimes, setBookedTimes] = useState<string[]>([])
 
@@ -33,11 +41,21 @@ export default function TimeStep({ bookingData, updateBookingData, onNext, onPre
   useEffect(() => {
     const fetchUnavailableTimes = async () => {
       if (!selectedDate || !bookingData.doctor) return
-      const formattedDate = selectedDate.toISOString().split("T")[0]
+      // Sử dụng format local để tránh lệch ngày do timezone
+      const formattedDate = formatDateToLocalString(selectedDate)
 
       try {
         const data = await api.getUnavailableTimes(bookingData.doctor.id, formattedDate)
-        setBookedTimes(data.unavailable_times || [])
+        // Format lại thời gian về HH:MM để đảm bảo so sánh chính xác
+        const formattedTimes = (data.unavailable_times || []).map((time: string) => {
+          // Nếu có format HH:MM:SS, chỉ lấy HH:MM
+          if (time && time.includes(':')) {
+            const parts = time.split(':')
+            return `${parts[0]}:${parts[1]}`
+          }
+          return time
+        })
+        setBookedTimes(formattedTimes)
       } catch (error) {
         console.error("Lỗi khi tải giờ đã hết:", error)
         setBookedTimes([])
@@ -50,7 +68,9 @@ export default function TimeStep({ bookingData, updateBookingData, onNext, onPre
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date)
     if (date) {
-      updateBookingData({ date: date.toISOString().split("T")[0], time: "" })
+      // Sử dụng format local để tránh lệch ngày do timezone
+      const formattedDate = formatDateToLocalString(date)
+      updateBookingData({ date: formattedDate, time: "" })
     }
   }
 
@@ -134,7 +154,12 @@ export default function TimeStep({ bookingData, updateBookingData, onNext, onPre
               <div>
                 <h4 className="font-medium">Thời gian đã chọn:</h4>
                 <p className="text-muted-foreground">
-                  {new Date(bookingData.date).toLocaleDateString("vi-VN", {
+                  {selectedDate ? selectedDate.toLocaleDateString("vi-VN", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }) : new Date(bookingData.date + 'T12:00:00').toLocaleDateString("vi-VN", {
                     weekday: "long",
                     year: "numeric",
                     month: "long",

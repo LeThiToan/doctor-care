@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Stethoscope, Phone, Mail, MapPin } from "lucide-react"
+import { Phone, Mail, MapPin } from "lucide-react"
 
 export default function Footer() {
   return (
@@ -9,9 +9,11 @@ export default function Footer() {
           {/* Logo & Description */}
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="bg-primary p-2 rounded-lg">
-                <Stethoscope className="h-6 w-6 text-primary-foreground" />
-              </div>
+              <img 
+                src="/images/lopgo..png" 
+                alt="MedBooking Logo" 
+                className="h-10 w-auto object-contain"
+              />
               <span className="text-xl font-bold text-foreground">MedBooking</span>
             </Link>
             <p className="text-muted-foreground mb-4 max-w-md">
@@ -25,11 +27,11 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <span>cudecpro@gmail.com</span>
+                <span>contact@medbooking.comcom</span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                <span>27 Trần Hưng Đạo, Điện Bàn, Đà Nẵng</span>
+                <span>78 Đường Hữu Nghị, Đồng Hới</span>
               </div>
             </div>
           </div>

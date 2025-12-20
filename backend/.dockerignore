@@ -1,0 +1,55 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+# Keep package-lock.json for consistent builds
+
+# Build output (will be built in container)
+dist
+
+# Environment files (should be set in Azure)
+.env
+.env.local
+.env.*.local
+
+# Development files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+*.md
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__
+coverage
+
+# Scripts (not needed in production)
+scripts
+
+# SQL files (database should be set up separately)
+*.sql
+
+# Logs
+logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp
+temp
+*.tmp
+

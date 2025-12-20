@@ -93,18 +93,17 @@ async function getGeminiResponse(message: string, conversationHistory: any[]): P
 
         return text
     } catch (error: any) {
-        console.error('Error calling Gemini API:', error)
+        // Log error without exposing sensitive information
+        const errorInfo: any = {
+            status: error.status,
+            message: error.message ? error.message.substring(0, 200) : 'Unknown error'
+        }
         
-        // Log more details about the error
-        if (error.message) {
-            console.error('Error message:', error.message)
-        }
-        if (error.status) {
-            console.error('Error status:', error.status)
-        }
-        if (error.errorDetails) {
-            console.error('Error details:', error.errorDetails)
-        }
+        // Only log safe error information (no API keys or sensitive data)
+        console.error('Error calling Gemini API:', {
+            status: errorInfo.status,
+            message: errorInfo.message
+        })
         
         // Handle specific error cases
         if (error.status === 429) {

@@ -47,10 +47,10 @@ class DoctorsAPI {
     return this.request('/api/doctors-auth/appointments')
   }
 
-  async updateAppointmentStatus(appointmentId: string, status: string) {
+  async updateAppointmentStatus(appointmentId: string, status: string, cancelReason?: string) {
     return this.request(`/api/doctors-auth/appointments/${appointmentId}/status`, {
       method: 'PUT',
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, cancel_reason: cancelReason }),
     })
   }
 }

@@ -69,6 +69,10 @@ export default function CancelAppointmentDialog({ appointment, open, onClose, on
           <DialogDescription>
             Bạn có chắc chắn muốn hủy lịch hẹn với {appointment.doctor_name} vào{" "}
             {new Date(appointment.appointment_date).toLocaleDateString("vi-VN")} lúc {appointment.appointment_time}?
+            <br />
+            <span className="text-amber-600 dark:text-amber-400 font-medium mt-2 block">
+              ⚠️ Lưu ý: Chỉ có thể hủy lịch hẹn chưa được xác nhận (đang chờ xác nhận).
+            </span>
           </DialogDescription>
         </DialogHeader>
 

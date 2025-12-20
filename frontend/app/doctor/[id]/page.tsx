@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { api } from "@/lib/api"
+import StartChatButton from "@/components/chat/start-chat-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -311,13 +312,20 @@ export default function DoctorDetailPage() {
                         Chọn thời gian phù hợp và đặt lịch ngay với {doctor.name}
                       </p>
                     </div>
-                    <Link href={`/booking?doctor=${doctor.id}`}>
-                      <Button size="lg" className="w-full md:w-auto">
-                        <Calendar className="h-5 w-5 mr-2" />
-                        Đặt lịch khám
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
-                    </Link>
+                    <div className="flex gap-3 w-full md:w-auto">
+                      <StartChatButton 
+                        doctorId={doctor.id} 
+                        doctorName={doctor.name}
+                        className="w-full md:w-auto"
+                      />
+                      <Link href={`/booking?doctor=${doctor.id}`} className="w-full md:w-auto">
+                        <Button size="lg" className="w-full md:w-auto">
+                          <Calendar className="h-5 w-5 mr-2" />
+                          Đặt lịch khám
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

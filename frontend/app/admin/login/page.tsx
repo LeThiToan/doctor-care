@@ -29,9 +29,10 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     if (!loading && isLoggedIn) {
-      router.replace("/admin")
+      // Sử dụng window.location.href để force reload
+      window.location.href = "/admin"
     }
-  }, [isLoggedIn, loading, router])
+  }, [isLoggedIn, loading])
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -42,16 +43,34 @@ export default function AdminLoginPage() {
     setIsSubmitting(false)
 
     if (result.success) {
-      router.replace("/admin")
+      // Sử dụng window.location.href để force reload và tránh vấn đề với state
+      window.location.href = "/admin"
     } else {
       setFormError(result.error || "Đăng nhập thất bại")
     }
   }
 
-  if (loading) {
+  // Chỉ hiển thị loading nếu thực sự đang loading và chưa có timeout
+  const [showLoading, setShowLoading] = useState(true)
+  
+  useEffect(() => {
+    if (!loading) {
+      setShowLoading(false)
+    }
+    // Force hide loading sau 300ms
+    const timeout = setTimeout(() => {
+      setShowLoading(false)
+    }, 300)
+    return () => clearTimeout(timeout)
+  }, [loading])
+
+  if (loading && showLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
-        Đang kiểm tra phiên đăng nhập...
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-300">Đang kiểm tra phiên đăng nhập...</p>
+        </div>
       </div>
     )
   }

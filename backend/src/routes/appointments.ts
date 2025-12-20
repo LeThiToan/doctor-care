@@ -159,6 +159,25 @@ router.put('/:id/cancel', async (req, res) => {
     try {
         const { id } = req.params
 
+        // Kiểm tra trạng thái hiện tại của lịch hẹn
+        const appointment = await query(
+            "SELECT status FROM appointments WHERE id = ?",
+            [id]
+        ) as any[]
+
+        if (appointment.length === 0) {
+            return res.status(404).json({ error: "Không tìm thấy lịch hẹn" })
+        }
+
+        const currentStatus = appointment[0].status
+
+        // Chỉ cho phép hủy khi status là "pending" (chưa xác nhận)
+        if (currentStatus !== 'pending') {
+            return res.status(400).json({ 
+                error: `Không thể hủy lịch hẹn. Lịch hẹn đã ở trạng thái "${currentStatus}". Chỉ có thể hủy lịch hẹn chưa được xác nhận (pending).` 
+            })
+        }
+
         await query(
             "UPDATE appointments SET status = 'cancelled' WHERE id = ?",
             [id]

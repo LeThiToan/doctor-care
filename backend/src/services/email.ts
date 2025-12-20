@@ -287,3 +287,195 @@ export const sendPasswordResetEmail = async (
     }
 }
 
+// Gửi email thông báo hủy lịch hẹn
+export const sendAppointmentCancellationEmail = async (
+    patientEmail: string,
+    patientName: string,
+    doctorName: string,
+    doctorTitle: string,
+    specialty: string,
+    appointmentDate: string,
+    appointmentTime: string,
+    cancelReason?: string | null
+) => {
+    try {
+        const transporter = createTransporter()
+        if (!transporter) {
+            console.error('❌ Không thể tạo email transporter - thiếu cấu hình email')
+            return { success: false, error: 'Email chưa được cấu hình' }
+        }
+
+        const formattedDate = new Date(appointmentDate).toLocaleDateString('vi-VN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        })
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                        background-color: #f5f5f5;
+                    }
+                    .container {
+                        background-color: #ffffff;
+                        border-radius: 10px;
+                        padding: 30px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    }
+                    .header {
+                        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                        color: white;
+                        padding: 20px;
+                        border-radius: 10px 10px 0 0;
+                        margin: -30px -30px 30px -30px;
+                        text-align: center;
+                    }
+                    .header h1 {
+                        margin: 0;
+                        font-size: 24px;
+                    }
+                    .content {
+                        padding: 20px 0;
+                    }
+                    .info-box {
+                        background-color: #fef2f2;
+                        border-left: 4px solid #ef4444;
+                        padding: 15px;
+                        margin: 20px 0;
+                        border-radius: 5px;
+                    }
+                    .info-row {
+                        display: flex;
+                        padding: 10px 0;
+                        border-bottom: 1px solid #e5e7eb;
+                    }
+                    .info-row:last-child {
+                        border-bottom: none;
+                    }
+                    .info-label {
+                        font-weight: bold;
+                        width: 150px;
+                        color: #374151;
+                    }
+                    .info-value {
+                        flex: 1;
+                        color: #1f2937;
+                    }
+                    .warning-box {
+                        background-color: #fef3c7;
+                        border-left: 4px solid #f59e0b;
+                        padding: 15px;
+                        margin: 20px 0;
+                        border-radius: 5px;
+                    }
+                    .footer {
+                        margin-top: 30px;
+                        padding-top: 20px;
+                        border-top: 1px solid #e5e7eb;
+                        text-align: center;
+                        color: #6b7280;
+                        font-size: 14px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>❌ Thông báo hủy lịch hẹn</h1>
+                    </div>
+                    
+                    <div class="content">
+                        <p>Xin chào <strong>${patientName}</strong>,</p>
+                        
+                        <p>Chúng tôi rất tiếc phải thông báo rằng lịch hẹn khám của bạn đã bị hủy bởi bác sĩ.</p>
+                        
+                        <div class="info-box">
+                            <div class="info-row">
+                                <div class="info-label">Bác sĩ:</div>
+                                <div class="info-value">${doctorTitle} ${doctorName}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Chuyên khoa:</div>
+                                <div class="info-value">${specialty}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Ngày khám:</div>
+                                <div class="info-value">${formattedDate}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Giờ khám:</div>
+                                <div class="info-value">${appointmentTime}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Trạng thái:</div>
+                                <div class="info-value">
+                                    <span style="background-color: #fee2e2; color: #991b1b; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold;">Đã hủy</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${cancelReason ? `
+                        <div class="info-box" style="background-color: #f0f9ff; border-left: 4px solid #0ea5e9;">
+                            <p style="margin: 0 0 10px 0; font-weight: bold; color: #0c4a6e;">Lý do hủy lịch:</p>
+                            <p style="margin: 0; color: #075985;">${cancelReason}</p>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="warning-box">
+                            <p><strong>Lưu ý:</strong></p>
+                            <ul>
+                                <li>Lịch hẹn này đã bị hủy và không còn hiệu lực</li>
+                                <li>Nếu bạn vẫn muốn khám với bác sĩ này, vui lòng đặt lịch hẹn mới</li>
+                                <li>Nếu có thắc mắc, vui lòng liên hệ với chúng tôi qua form liên hệ trên website</li>
+                            </ul>
+                        </div>
+                        
+                        <p>Chúng tôi xin lỗi vì sự bất tiện này và mong được phục vụ bạn trong tương lai.</p>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>Trân trọng,<br>
+                        <strong>Đội ngũ MedBooking</strong></p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `
+
+        const adminEmail = process.env.EMAIL_USER
+        if (!adminEmail) {
+            throw new Error('EMAIL_USER chưa được cấu hình')
+        }
+
+        const mailOptions = {
+            from: `"MedBooking" <${adminEmail}>`,
+            to: patientEmail,
+            replyTo: adminEmail,
+            subject: `❌ Thông báo hủy lịch hẹn với ${doctorTitle} ${doctorName}`,
+            html: htmlContent,
+        }
+
+        console.log(`📧 Đang gửi email hủy lịch từ ${adminEmail} đến ${patientEmail}...`)
+        const info = await transporter.sendMail(mailOptions)
+        console.log('✅ Cancellation email sent successfully!')
+        console.log(`   From: ${adminEmail}`)
+        console.log(`   To: ${patientEmail}`)
+        console.log(`   Message ID: ${info.messageId}`)
+        return { success: true, messageId: info.messageId }
+    } catch (error: any) {
+        console.error('❌ Error sending cancellation email:', error)
+        return { success: false, error: error.message }
+    }
+}
+

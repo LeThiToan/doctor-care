@@ -115,7 +115,14 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}/cancel`, {
       method: 'PUT',
     })
-    return response.json()
+    
+    const data = await response.json()
+    
+    if (!response.ok) {
+      throw new Error(data.error || "Không thể hủy lịch hẹn")
+    }
+    
+    return data
   },
 
   rateAppointment: async (appointmentId: string, rating: number) => {

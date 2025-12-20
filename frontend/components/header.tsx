@@ -7,9 +7,12 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/app/hooks/useAuth"
 import { useDoctorAuth } from "@/app/hooks/useDoctorAuth"
+import LoginRequiredDialog from "@/components/login-required-dialog"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
+  const [redirectPath, setRedirectPath] = useState("/appointments")
   const router = useRouter()
   const { isLoggedIn, user, logout } = useAuth()
   const { isLoggedIn: isDoctorLoggedIn, doctor, logout: doctorLogout } = useDoctorAuth()
@@ -45,9 +48,11 @@ export default function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="bg-primary p-2 rounded-lg">
-              <Stethoscope className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <img 
+              src="/images/lopgo..png" 
+              alt="MedBooking Logo" 
+              className="h-10 w-auto object-contain"
+            />
             <span className="text-xl font-bold text-foreground">MedBooking</span>
           </Link>
 
@@ -61,12 +66,36 @@ export default function Header() {
                 <Link href="/doctors" className="text-foreground hover:text-primary transition-colors font-medium">
                   Bác sĩ
                 </Link>
-                <Link href="/booking" className="text-foreground hover:text-primary transition-colors font-medium">
-                  Đặt lịch
-                </Link>
-                <Link href="/appointments" className="text-foreground hover:text-primary transition-colors font-medium">
-                  Lịch hẹn
-                </Link>
+                {isLoggedIn ? (
+                  <Link href="/booking" className="text-foreground hover:text-primary transition-colors font-medium">
+                    Đặt lịch
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setRedirectPath("/booking")
+                      setShowLoginDialog(true)
+                    }}
+                    className="text-foreground hover:text-primary transition-colors font-medium"
+                  >
+                    Đặt lịch
+                  </button>
+                )}
+                {isLoggedIn ? (
+                  <Link href="/appointments" className="text-foreground hover:text-primary transition-colors font-medium">
+                    Lịch hẹn
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setRedirectPath("/appointments")
+                      setShowLoginDialog(true)
+                    }}
+                    className="text-foreground hover:text-primary transition-colors font-medium"
+                  >
+                    Lịch hẹn
+                  </button>
+                )}
                 {isLoggedIn && (
                   <Link href="/profile" className="text-foreground hover:text-primary transition-colors font-medium">
                     Hồ sơ
@@ -141,12 +170,38 @@ export default function Header() {
                   <Link href="/doctors" className="text-foreground hover:text-primary transition-colors py-2 font-medium">
                     Bác sĩ
                   </Link>
-                  <Link href="/booking" className="text-foreground hover:text-primary transition-colors py-2 font-medium">
-                    Đặt lịch
-                  </Link>
-                  <Link href="/appointments" className="text-foreground hover:text-primary transition-colors py-2 font-medium">
-                    Lịch hẹn
-                  </Link>
+                  {isLoggedIn ? (
+                    <Link href="/booking" className="text-foreground hover:text-primary transition-colors py-2 font-medium">
+                      Đặt lịch
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false)
+                        setRedirectPath("/booking")
+                        setShowLoginDialog(true)
+                      }}
+                      className="text-foreground hover:text-primary transition-colors py-2 font-medium text-left w-full"
+                    >
+                      Đặt lịch
+                    </button>
+                  )}
+                  {isLoggedIn ? (
+                    <Link href="/appointments" className="text-foreground hover:text-primary transition-colors py-2 font-medium">
+                      Lịch hẹn
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false)
+                        setRedirectPath("/appointments")
+                        setShowLoginDialog(true)
+                      }}
+                      className="text-foreground hover:text-primary transition-colors py-2 font-medium text-left w-full"
+                    >
+                      Lịch hẹn
+                    </button>
+                  )}
                   {isLoggedIn && (
                     <Link href="/profile" className="text-foreground hover:text-primary transition-colors py-2 font-medium">
                       Hồ sơ
@@ -207,6 +262,12 @@ export default function Header() {
           </div>
         )}
       </div>
+
+      <LoginRequiredDialog
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+        redirectTo={redirectPath}
+      />
     </header>
   )
 }

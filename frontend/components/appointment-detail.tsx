@@ -3,12 +3,15 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Calendar, Clock, User, Phone, MapPin, FileText, CreditCard } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Calendar, Clock, User, Phone, MapPin, FileText, CreditCard, Star } from "lucide-react"
 
 interface Appointment {
   id: string
+  doctor_id?: number
   doctorName: string
   doctorTitle: string
+  doctor_avatar?: string
   specialty: string
   date: string
   time: string
@@ -54,11 +57,34 @@ export default function AppointmentDetail({ appointment, open, onClose }: Appoin
           <div>
             <h3 className="font-semibold mb-3">Thông tin bác sĩ</h3>
             <div className="bg-muted p-4 rounded-lg">
-              <h4 className="font-medium text-lg">{appointment.doctorName}</h4>
-              <p className="text-muted-foreground">{appointment.doctorTitle}</p>
-              <Badge variant="outline" className="mt-2">
-                {appointment.specialty}
-              </Badge>
+              <div className="flex items-start gap-4">
+                {appointment.doctor_avatar && (
+                  <Avatar className="h-20 w-20 border-2 border-primary/20">
+                    <AvatarImage
+                      src={`/images/doctors/${appointment.doctor_avatar}`}
+                      alt={appointment.doctorName}
+                    />
+                    <AvatarFallback className="text-lg">
+                      {appointment.doctorName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                <div className="flex-1">
+                  <h4 className="font-medium text-lg mb-1">{appointment.doctorName}</h4>
+                  <p className="text-muted-foreground mb-2">{appointment.doctorTitle}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                      {appointment.specialty}
+                    </Badge>
+                    {appointment.rating && (
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span>{appointment.rating}/5</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

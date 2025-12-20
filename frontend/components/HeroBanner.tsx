@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Swiper, SwiperSlide } from "swiper/react"
@@ -8,6 +9,8 @@ import "swiper/css"
 import "swiper/css/pagination"
 import "swiper/css/effect-fade"
 import { Calendar, Clock, Users, ArrowRight, Sparkles } from "lucide-react"
+import { useAuth } from "@/app/hooks/useAuth"
+import LoginRequiredDialog from "@/components/login-required-dialog"
 
 const banners = [
     {
@@ -41,17 +44,20 @@ const banners = [
 
 export default function HeroBanner() {
     const router = useRouter()
+    const { isLoggedIn } = useAuth()
+    const [showLoginDialog, setShowLoginDialog] = useState(false)
+    const [redirectPath, setRedirectPath] = useState("/appointments")
 
     const handleNavigate = (path: string) => {
-        const token = localStorage.getItem("token")
-        if (token) {
+        if (isLoggedIn) {
             router.push(path)
         } else {
-            // Nếu chưa đăng nhập và muốn đặt lịch, chuyển đến login với redirect
-            if (path === "/booking") {
-                router.push("/login?redirect=/booking")
+            // Nếu chưa đăng nhập và muốn xem appointments hoặc booking, hiển thị dialog
+            if (path === "/appointments" || path === "/booking") {
+                setRedirectPath(path)
+                setShowLoginDialog(true)
             } else {
-                router.push("/login")
+                router.push(path)
             }
         }
     }
@@ -171,6 +177,12 @@ export default function HeroBanner() {
                     animation-delay: 0.5s;
                 }
             `}</style>
+
+            <LoginRequiredDialog
+                open={showLoginDialog}
+                onOpenChange={setShowLoginDialog}
+                redirectTo={redirectPath}
+            />
         </div>
     )
 }

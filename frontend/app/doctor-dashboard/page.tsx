@@ -26,6 +26,7 @@ import {
   MapPin,
   Sparkles
 } from "lucide-react"
+import CancelAppointmentDoctorDialog from "@/components/cancel-appointment-doctor-dialog"
 
 interface Appointment {
   id: string
@@ -48,6 +49,7 @@ export default function DoctorDashboard() {
   const [appointmentsLoading, setAppointmentsLoading] = useState(true)
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("all")
+  const [cancellingAppointment, setCancellingAppointment] = useState<Appointment | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -67,8 +69,14 @@ export default function DoctorDashboard() {
       setAppointmentsLoading(true)
       const data = await doctorsApi.getDoctorAppointments()
       setAppointments(data)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Lỗi khi tải lịch hẹn:", error)
+      const errorMessage = error?.message || "Không thể tải lịch hẹn"
+      
+      // Hiển thị thông báo lỗi nếu có
+      if (errorMessage.includes("chưa được map") || errorMessage.includes("chưa được liên kết")) {
+        alert(`⚠️ ${errorMessage}\n\nVui lòng liên hệ admin để cập nhật tài khoản của bạn.`)
+      }
     } finally {
       setAppointmentsLoading(false)
     }
@@ -79,10 +87,10 @@ export default function DoctorDashboard() {
     router.push('/')
   }
 
-  const handleUpdateStatus = async (appointmentId: string, newStatus: string) => {
+  const handleUpdateStatus = async (appointmentId: string, newStatus: string, cancelReason?: string) => {
     try {
       setUpdatingStatus(appointmentId)
-      await doctorsApi.updateAppointmentStatus(appointmentId, newStatus)
+      await doctorsApi.updateAppointmentStatus(appointmentId, newStatus, cancelReason)
       await fetchAppointments()
     } catch (error) {
       console.error("Lỗi khi cập nhật trạng thái:", error)
@@ -90,6 +98,12 @@ export default function DoctorDashboard() {
     } finally {
       setUpdatingStatus(null)
     }
+  }
+
+  const handleCancelAppointment = async (cancelReason: string) => {
+    if (!cancellingAppointment) return
+    await handleUpdateStatus(cancellingAppointment.id, 'cancelled', cancelReason)
+    setCancellingAppointment(null)
   }
 
   const getStatusColor = (status: string) => {
@@ -312,21 +326,12 @@ export default function DoctorDashboard() {
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => handleUpdateStatus(appointment.id, 'cancelled')}
+                          onClick={() => setCancellingAppointment(appointment)}
                           disabled={updatingStatus === appointment.id}
                           className="gap-2"
                         >
-                          {updatingStatus === appointment.id ? (
-                            <>
-                              <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                              Đang xử lý...
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="h-4 w-4" />
-                              Hủy lịch
-                            </>
-                          )}
+                          <XCircle className="h-4 w-4" />
+                          Hủy lịch
                         </Button>
                       </>
                     )}
@@ -567,6 +572,17 @@ export default function DoctorDashboard() {
       </main>
 
       <Footer />
+
+      {/* Dialog hủy lịch hẹn */}
+      {cancellingAppointment && (
+        <CancelAppointmentDoctorDialog
+          appointmentId={cancellingAppointment.id}
+          patientName={cancellingAppointment.patient_name}
+          open={!!cancellingAppointment}
+          onClose={() => setCancellingAppointment(null)}
+          onConfirm={handleCancelAppointment}
+        />
+      )}
     </div>
   )
 }

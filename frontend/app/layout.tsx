@@ -6,6 +6,9 @@ import { Suspense } from "react"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import { AIChatboxWrapper } from "@/components/ai-chatbox-wrapper"
+import FloatingChatButton from "@/components/chat/floating-chat-button"
+import { ChatProvider } from "@/app/contexts/chat-context"
+import NotificationBanner from "@/components/notification-banner"
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -17,6 +20,10 @@ export const metadata: Metadata = {
   title: "MedBooking - Đặt lịch khám bệnh online",
   description: "Hệ thống đặt lịch khám bệnh trực tuyến hiện đại và tiện lợi",
   generator: "v0.app",
+  icons: {
+    icon: "/images/lopgo..png",
+    apple: "/images/lopgo..png",
+  },
 }
 
 export default function RootLayout({
@@ -27,12 +34,16 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className={`${dmSans.variable} font-sans antialiased`}>
-        <Suspense fallback={null}>
-          {children}
-          <Analytics />
-          <Toaster />
-          <AIChatboxWrapper />
-        </Suspense>
+        <ChatProvider>
+          <Suspense fallback={null}>
+            <NotificationBanner />
+            {children}
+            <Analytics />
+            <Toaster />
+            <AIChatboxWrapper />
+            <FloatingChatButton />
+          </Suspense>
+        </ChatProvider>
       </body>
     </html>
   )

@@ -57,8 +57,17 @@ const requireAdmin = async (req: Request, res: Response, next: NextFunction) => 
     // @ts-ignore
     req.admin = decoded
     next()
-  } catch (error) {
+  } catch (error: any) {
     console.error('Admin auth error:', error)
+    
+    // Phân biệt token expired và token invalid
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ 
+        error: 'Token đã hết hạn. Vui lòng đăng nhập lại.',
+        expired: true 
+      })
+    }
+    
     return res.status(401).json({ error: 'Token không hợp lệ' })
   }
 }
@@ -611,6 +620,78 @@ router.get('/patients', requireAdmin, async (_req, res) => {
     res.json(users)
   } catch (error) {
     console.error('Get patients error:', error)
+    res.status(500).json({ error: 'Lỗi server' })
+  }
+})
+
+// Fix doctor account mapping
+router.post('/doctors/fix-mapping', requireAdmin, async (req, res) => {
+  try {
+    const { account_id, doctor_id } = req.body
+
+    if (!account_id || !doctor_id) {
+      return res.status(400).json({ error: 'Thiếu account_id hoặc doctor_id' })
+    }
+
+    // Kiểm tra doctor có tồn tại không
+    const doctors = await query('SELECT id, name FROM doctors WHERE id = ?', [doctor_id]) as any[]
+    if (doctors.length === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy doctor với id này' })
+    }
+
+    // Kiểm tra account có tồn tại không
+    const accounts = await query('SELECT id, name, email FROM doctor_account WHERE id = ?', [account_id]) as any[]
+    if (accounts.length === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy tài khoản bác sĩ với id này' })
+    }
+
+    // Cập nhật mapping
+    await query(
+      'UPDATE doctor_account SET doctor_id = ? WHERE id = ?',
+      [doctor_id, account_id]
+    )
+
+    res.json({
+      message: `Đã map tài khoản "${accounts[0].name}" với doctor_id: ${doctor_id} (${doctors[0].name})`,
+      account: accounts[0],
+      doctor: doctors[0]
+    })
+  } catch (error) {
+    console.error('Fix doctor mapping error:', error)
+    res.status(500).json({ error: 'Lỗi server' })
+  }
+})
+
+// Xóa hết dữ liệu trong bảng doctors (CẢNH BÁO!)
+router.delete('/doctors/clear-all', requireAdmin, async (req, res) => {
+  try {
+    // Đếm số lượng trước khi xóa
+    const [appointmentsCount] = await query('SELECT COUNT(*) as count FROM appointments') as any[]
+    const [doctorsCount] = await query('SELECT COUNT(*) as count FROM doctors') as any[]
+    const [accountsCount] = await query('SELECT COUNT(*) as count FROM doctor_account') as any[]
+
+    console.log(`[CLEAR DOCTORS] Đang xóa: ${appointmentsCount.count} appointments, ${doctorsCount.count} doctors, ${accountsCount.count} accounts`)
+
+    // Xóa theo thứ tự để tránh lỗi foreign key
+    await query('DELETE FROM appointments')
+    await query('DELETE FROM doctor_account')
+    await query('DELETE FROM doctors')
+
+    // Reset AUTO_INCREMENT
+    await query('ALTER TABLE appointments AUTO_INCREMENT = 1')
+    await query('ALTER TABLE doctor_account AUTO_INCREMENT = 1')
+    await query('ALTER TABLE doctors AUTO_INCREMENT = 1')
+
+    res.json({
+      message: 'Đã xóa hết dữ liệu trong bảng doctors, doctor_account và appointments',
+      deleted: {
+        appointments: appointmentsCount.count,
+        doctors: doctorsCount.count,
+        accounts: accountsCount.count
+      }
+    })
+  } catch (error) {
+    console.error('Clear doctors error:', error)
     res.status(500).json({ error: 'Lỗi server' })
   }
 })

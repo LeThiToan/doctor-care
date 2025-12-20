@@ -14,8 +14,10 @@ import { useAuth } from "@/app/hooks/useAuth"
 
 interface Appointment {
   id: string
+  doctor_id?: number
   doctor_name: string
   doctor_title: string
+  doctor_avatar?: string
   specialty: string
   appointment_date: string
   appointment_time: string
@@ -83,15 +85,24 @@ export default function AppointmentsList() {
 
   const handleCancelAppointment = async (appointmentId: string) => {
     try {
-      await api.cancelAppointment(appointmentId)
+      const response = await api.cancelAppointment(appointmentId)
+      
+      // Check if response has error
+      if (response.error) {
+        alert(response.error)
+        return
+      }
+      
       // Refresh appointments
       if (user?.id) {
         const data = await api.getAppointments(user.id.toString())
         setAppointments(data)
       }
       setCancellingAppointment(null)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Lỗi khi hủy lịch hẹn:", error)
+      const errorMessage = error?.message || error?.error || "Không thể hủy lịch hẹn. Vui lòng thử lại."
+      alert(errorMessage)
     }
   }
 
@@ -200,7 +211,7 @@ export default function AppointmentsList() {
               Chi tiết
             </Button>
 
-            {appointment.status === "confirmed" && (
+            {appointment.status === "pending" && (
               <Button variant="outline" size="sm" onClick={() => setCancellingAppointment(appointment)}>
                 <X className="h-4 w-4 mr-1" />
                 Hủy lịch
@@ -299,7 +310,24 @@ export default function AppointmentsList() {
       {/* Dialogs */}
       {selectedAppointment && (
         <AppointmentDetail
-          appointment={selectedAppointment}
+          appointment={{
+            id: selectedAppointment.id,
+            doctor_id: selectedAppointment.doctor_id,
+            doctorName: selectedAppointment.doctor_name,
+            doctorTitle: selectedAppointment.doctor_title,
+            doctor_avatar: selectedAppointment.doctor_avatar,
+            specialty: selectedAppointment.specialty,
+            date: selectedAppointment.appointment_date,
+            time: selectedAppointment.appointment_time,
+            status: selectedAppointment.status,
+            location: "78 Đường Hữu Nghị, Đồng Hới", // Default location
+            price: selectedAppointment.price,
+            patientName: selectedAppointment.patient_name,
+            phone: selectedAppointment.patient_phone,
+            symptoms: selectedAppointment.symptoms,
+            bookingCode: selectedAppointment.id,
+            rating: selectedAppointment.rating,
+          }}
           open={!!selectedAppointment}
           onClose={() => setSelectedAppointment(null)}
         />

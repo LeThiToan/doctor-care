@@ -138,7 +138,7 @@ router.get('/:id/unavailable-times', async (req, res) => {
         
         // Lấy tất cả appointments đã được đặt cho bác sĩ này trong ngày
         const rows = await query(
-            `SELECT appointment_time, status 
+            `SELECT TIME_FORMAT(appointment_time, '%H:%i') as appointment_time, status 
              FROM appointments 
              WHERE doctor_id = ? AND appointment_date = ? 
              AND status IN ('pending', 'confirmed', 'completed')
@@ -146,7 +146,7 @@ router.get('/:id/unavailable-times', async (req, res) => {
             [id, date]
         ) as any[]
         
-        // Trả về danh sách thời gian đã hết
+        // Trả về danh sách thời gian đã hết (format HH:MM)
         const unavailableTimes = rows.map(row => row.appointment_time)
         
         res.json({

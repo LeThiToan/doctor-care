@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Card } from "@/components/ui/card"
 import { Bot, Send, X, Minimize2, Maximize2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useChatContext } from "@/app/contexts/chat-context"
 
 interface Message {
   id: string
@@ -16,6 +17,7 @@ interface Message {
 }
 
 export function AIChatbox() {
+  const { setIsAIChatboxOpen } = useChatContext()
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
@@ -122,6 +124,10 @@ export function AIChatbox() {
       handleSend()
     }
   }
+
+  useEffect(() => {
+    setIsAIChatboxOpen(isOpen)
+  }, [isOpen, setIsAIChatboxOpen])
 
   if (!isOpen) {
     return (
