@@ -22,6 +22,8 @@ import { query } from './config/database'
 
 const app = express()
 const httpServer = createServer(app)
+
+// CORS configuration for Socket.io - allow all Netlify origins
 const allowedOrigins = [
     'http://localhost:3000',
     'https://joyful-cranachan-242993.netlify.app',
