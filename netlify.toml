@@ -1,5 +1,6 @@
 [build]
-  command = "cd frontend && npm install && npm run build"
+  base = "frontend"
+  command = "npm install && npm run build"
   # Publish directory is handled by @netlify/plugin-nextjs automatically
 
 [[plugins]]
