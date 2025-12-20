@@ -19,6 +19,12 @@ router.post('/login', async (req, res) => {
             [email]
         ) as any[]
 
+        // Ensure rows is always an array
+        if (!rows || !Array.isArray(rows)) {
+            console.error("Query returned non-array result:", rows)
+            return res.status(500).json({ error: "Database error" })
+        }
+
         const user = rows[0]
 
         if (!user) {
