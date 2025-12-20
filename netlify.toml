@@ -10,11 +10,8 @@
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
 
-# Redirects for Next.js client-side routing
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Redirects are handled automatically by @netlify/plugin-nextjs
+# No need to configure redirects manually
 
 # Environment variables will be set in Netlify dashboard
 # NEXT_PUBLIC_API_URL should be set to your backend URL
