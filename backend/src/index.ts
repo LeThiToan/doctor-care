@@ -22,9 +22,22 @@ import { query } from './config/database'
 
 const app = express()
 const httpServer = createServer(app)
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://joyful-cranachan-242993.netlify.app',
+    'https://vermillion-kulfi-ea1332.netlify.app',
+    process.env.FRONTEND_URL
+].filter(Boolean)
+
 const io = new Server(httpServer, {
     cors: {
-        origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.netlify.app')) {
+                callback(null, true)
+            } else {
+                callback(new Error('Not allowed by CORS'))
+            }
+        },
         credentials: true
     }
 })
@@ -32,9 +45,19 @@ const io = new Server(httpServer, {
 const PORT = process.env.PORT || 3001
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey"
 
-// Middleware
+// Middleware - CORS configuration
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true)
+        
+        // Check if origin is in allowed list or is a Netlify subdomain
+        if (allowedOrigins.includes(origin) || origin.endsWith('.netlify.app')) {
+            callback(null, true)
+        } else {
+            callback(new Error('Not allowed by CORS'))
+        }
+    },
     credentials: true
 }))
 // Tăng limit để hỗ trợ upload avatar (base64 có thể rất lớn)
