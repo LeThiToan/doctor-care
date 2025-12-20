@@ -1,6 +1,7 @@
 [build]
-  command = "cd frontend && npm run build"
-  # Don't set publish when using @netlify/plugin-nextjs - it handles it automatically
+  base = "frontend"
+  command = "npm run build"
+  # Publish directory is handled by @netlify/plugin-nextjs automatically
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
