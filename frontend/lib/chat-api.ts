@@ -39,11 +39,17 @@ class ChatAPI {
             ...options.headers,
         }
 
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`
-        } else {
-            throw new Error('Token không được cung cấp')
+        if (!token) {
+            console.error('Chat API: No token found in localStorage')
+            // Xóa token cũ nếu có
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('token')
+                localStorage.removeItem('doctor_token')
+            }
+            throw new Error('Token không được cung cấp. Vui lòng đăng nhập lại.')
         }
+
+        headers['Authorization'] = `Bearer ${token}`
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             ...options,
@@ -54,7 +60,22 @@ class ChatAPI {
             if (response.status === 401) {
                 // Token không hợp lệ hoặc đã hết hạn
                 const error = await response.json().catch(() => ({ error: 'Token không hợp lệ' }))
-                throw new Error(error.error || 'Token không hợp lệ')
+                
+                // Xóa token không hợp lệ
+                if (typeof window !== 'undefined') {
+                    console.error('Chat API: Token expired or invalid, clearing storage')
+                    localStorage.removeItem('token')
+                    localStorage.removeItem('doctor_token')
+                    localStorage.removeItem('user')
+                    localStorage.removeItem('doctor')
+                    
+                    // Redirect to login nếu đang ở client side
+                    if (error.error?.includes('hết hạn') || error.error?.includes('expired')) {
+                        window.location.href = '/login?expired=true'
+                    }
+                }
+                
+                throw new Error(error.error || 'Token không hợp lệ. Vui lòng đăng nhập lại.')
             }
             const error = await response.json().catch(() => ({ error: 'Lỗi server' }))
             throw new Error(error.error || 'Lỗi server')

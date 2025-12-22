@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { MessageCircle } from 'lucide-react'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { VisuallyHidden } from '@/components/ui/visually-hidden'
 import ChatWindow from './chat-window'
 import { chatApi, ChatRoom } from '@/lib/chat-api'
 import { useAuth } from '@/app/hooks/useAuth'
@@ -62,6 +63,9 @@ export default function StartChatButton({ doctorId, doctorName, className }: Sta
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogContent className="max-w-4xl h-[80vh] p-0" showCloseButton={false}>
+                    <VisuallyHidden>
+                        <DialogTitle>Chat với bác sĩ {doctorName || ''}</DialogTitle>
+                    </VisuallyHidden>
                     {roomId && (
                         <div className="h-full">
                             <ChatWindow

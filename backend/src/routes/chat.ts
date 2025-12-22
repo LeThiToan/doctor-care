@@ -16,9 +16,14 @@ interface AuthenticatedRequest extends Request {
 
 // Middleware để verify JWT token
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization?.split(' ')[1] || req.headers.authorization
+    const authHeader = req.headers.authorization
+    const token = authHeader?.split(' ')[1] || authHeader
     
     if (!token) {
+        console.error("Chat API: No token provided", { 
+            authHeader: authHeader ? "present" : "missing",
+            url: req.url 
+        })
         return res.status(401).json({ error: "Token không được cung cấp" })
     }
     
@@ -26,7 +31,19 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
         const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email: string; role?: string }
         ;(req as AuthenticatedRequest).user = decoded
         next()
-    } catch (error) {
+    } catch (error: any) {
+        console.error("Chat API: Token verification failed", { 
+            error: error.message,
+            tokenLength: token.length,
+            url: req.url 
+        })
+        
+        // Phân biệt các loại lỗi
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ error: "Token đã hết hạn. Vui lòng đăng nhập lại." })
+        } else if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ error: "Token không hợp lệ" })
+        }
         return res.status(401).json({ error: "Token không hợp lệ" })
     }
 }
