@@ -9,6 +9,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Không cần output: 'standalone' khi dùng Netlify plugin
+  // Plugin sẽ tự động xử lý
 }
 
 export default nextConfig

@@ -1,11 +1,12 @@
 [build]
   base = "frontend"
   command = "npm install && npm run build"
-  # Publish directory sẽ được Netlify Next.js plugin tự động xử lý
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
 [build.environment]
   NODE_VERSION = "20"
+  
+# Plugin sẽ tự động xử lý publish directory
 
