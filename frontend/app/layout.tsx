@@ -1,7 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { DM_Sans } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
+// Vercel Analytics chỉ dùng trên Vercel, không cần trên Netlify
+// import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
@@ -32,7 +33,8 @@ export default function RootLayout({
         <ChatProvider>
           <Suspense fallback={null}>
             {children}
-            <Analytics />
+            {/* Vercel Analytics chỉ dùng trên Vercel */}
+            {/* <Analytics /> */}
             <Toaster />
             <AIChatboxWrapper />
             <FloatingChatButton />

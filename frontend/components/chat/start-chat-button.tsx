@@ -62,7 +62,11 @@ export default function StartChatButton({ doctorId, doctorName, className }: Sta
             </Button>
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogContent className="max-w-4xl h-[80vh] p-0" showCloseButton={false}>
+                <DialogContent 
+                    className="max-w-4xl h-[80vh] p-0" 
+                    showCloseButton={false}
+                    aria-describedby={undefined}
+                >
                     <VisuallyHidden>
                         <DialogTitle>Chat với bác sĩ {doctorName || ''}</DialogTitle>
                     </VisuallyHidden>
