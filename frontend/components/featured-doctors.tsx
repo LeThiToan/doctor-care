@@ -30,7 +30,7 @@ export default function FeaturedDoctors() {
       try {
         setLoading(true)
         const data = await api.getDoctors()
-        
+
         // Sắp xếp theo rating (cao nhất trước) và lấy top 5
         const sortedDoctors = [...data]
           .sort((a, b) => {
@@ -41,7 +41,7 @@ export default function FeaturedDoctors() {
             return (b.reviews || 0) - (a.reviews || 0)
           })
           .slice(0, 5)
-        
+
         setDoctors(sortedDoctors)
       } catch (error) {
         console.error("Lỗi khi tải danh sách bác sĩ nổi bật:", error)
@@ -104,7 +104,7 @@ export default function FeaturedDoctors() {
           {doctors.map((doctor) => (
             <Card
               key={doctor.id}
-              className="group relative overflow-hidden border-none shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+              className="group relative overflow-hidden border-none shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 h-full flex flex-col"
             >
               {/* Top badge for highest rating */}
               {doctor.rating >= 4.8 && (
@@ -116,7 +116,7 @@ export default function FeaturedDoctors() {
                 </div>
               )}
 
-              <CardContent className="p-6">
+              <CardContent className="p-6 flex-1 flex flex-col">
                 {/* Avatar */}
                 <div className="relative mb-6 flex justify-center">
                   <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-primary/20 group-hover:border-primary/40 transition-colors">
@@ -135,7 +135,7 @@ export default function FeaturedDoctors() {
                         }}
                       />
                     ) : null}
-                    <div 
+                    <div
                       className={`w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center text-primary font-bold text-2xl ${doctor.avatar ? 'hidden' : ''}`}
                     >
                       {doctor.name.charAt(0)}
@@ -146,12 +146,12 @@ export default function FeaturedDoctors() {
                 </div>
 
                 {/* Name & Title */}
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors">
+                <div className="text-center mb-4 flex-grow">
+                  <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1">
                     {doctor.name}
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-2">{doctor.title}</p>
-                  <Badge variant="secondary" className="text-xs">
+                  <p className="text-sm text-muted-foreground mb-2 line-clamp-1">{doctor.title}</p>
+                  <Badge variant="secondary" className="text-xs line-clamp-1 inline-flex">
                     {doctor.specialty}
                   </Badge>
                 </div>
@@ -179,9 +179,9 @@ export default function FeaturedDoctors() {
                 </div>
 
                 {/* CTA Buttons */}
-                <div className="space-y-2">
+                <div className="space-y-2 mt-auto">
                   <Link href={`/booking?doctor=${doctor.id}`}>
-                    <Button 
+                    <Button
                       className="w-full group"
                       size="sm"
                     >
@@ -190,7 +190,7 @@ export default function FeaturedDoctors() {
                     </Button>
                   </Link>
                   <Link href={`/doctor/${doctor.id}`}>
-                    <Button 
+                    <Button
                       variant="outline"
                       className="w-full group"
                       size="sm"

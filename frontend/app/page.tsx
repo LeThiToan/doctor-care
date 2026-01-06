@@ -2,13 +2,13 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import HeroBanner from "@/components/HeroBanner"
 import FeaturedDoctors from "@/components/featured-doctors"
-import { 
-  Calendar, 
-  Users, 
-  Clock, 
-  Shield, 
-  Stethoscope, 
-  Heart, 
+import {
+  Calendar,
+  Users,
+  Clock,
+  Shield,
+  Stethoscope,
+  Heart,
   Star,
   CheckCircle2,
   ArrowRight,
@@ -72,30 +72,30 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { 
-                icon: <Calendar className="h-12 w-12" />, 
-                title: "Đặt lịch 24/7", 
+              {
+                icon: <Calendar className="h-12 w-12" />,
+                title: "Đặt lịch 24/7",
                 desc: "Đặt lịch khám bất cứ lúc nào, bất cứ đâu với hệ thống tự động và thông minh",
                 gradient: "from-blue-500 via-blue-600 to-blue-700",
                 delay: "0"
               },
-              { 
-                icon: <Users className="h-12 w-12" />, 
-                title: "Bác sĩ chuyên khoa", 
+              {
+                icon: <Users className="h-12 w-12" />,
+                title: "Bác sĩ chuyên khoa",
                 desc: "Đội ngũ bác sĩ uy tín, giàu kinh nghiệm từ các bệnh viện hàng đầu",
                 gradient: "from-green-500 via-green-600 to-green-700",
                 delay: "100"
               },
-              { 
-                icon: <Clock className="h-12 w-12" />, 
-                title: "Tiết kiệm thời gian", 
+              {
+                icon: <Clock className="h-12 w-12" />,
+                title: "Tiết kiệm thời gian",
                 desc: "Không cần xếp hàng, chủ động chọn giờ phù hợp với lịch trình cá nhân",
                 gradient: "from-purple-500 via-purple-600 to-purple-700",
                 delay: "200"
               },
-              { 
-                icon: <Shield className="h-12 w-12" />, 
-                title: "Bảo mật tuyệt đối", 
+              {
+                icon: <Shield className="h-12 w-12" />,
+                title: "Bảo mật tuyệt đối",
                 desc: "Thông tin cá nhân được mã hóa và bảo vệ chặt chẽ theo tiêu chuẩn quốc tế",
                 gradient: "from-orange-500 via-orange-600 to-orange-700",
                 delay: "300"
@@ -107,13 +107,13 @@ export default function HomePage() {
               >
                 {/* Gradient background on hover */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}></div>
-                
+
                 {/* Icon container */}
                 <div className={`relative bg-gradient-to-br ${item.gradient} w-20 h-20 flex items-center justify-center rounded-2xl mx-auto mb-6 text-white group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg`}>
                   {item.icon}
                   <div className="absolute inset-0 bg-white/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
                 </div>
-                
+
                 {/* Content */}
                 <h3 className="text-xl font-bold mb-4 text-center group-hover:text-primary transition-colors duration-300">
                   {item.title}
@@ -121,7 +121,7 @@ export default function HomePage() {
                 <p className="text-muted-foreground text-center leading-relaxed relative z-10">
                   {item.desc}
                 </p>
-                
+
                 {/* Decorative element */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
               </Card>
@@ -147,40 +147,40 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
-              { 
-                step: "01", 
-                title: "Chọn chuyên khoa & Bác sĩ", 
+              {
+                step: "01",
+                title: "Chọn chuyên khoa & Bác sĩ",
                 desc: "Tìm kiếm và lựa chọn bác sĩ phù hợp với nhu cầu của bạn",
                 icon: <Stethoscope className="h-6 w-6" />
               },
-              { 
-                step: "02", 
-                title: "Chọn thời gian khám", 
+              {
+                step: "02",
+                title: "Chọn thời gian khám",
                 desc: "Xem lịch trống và chọn thời gian thuận tiện nhất",
                 icon: <Calendar className="h-6 w-6" />
               },
-              { 
-                step: "03", 
-                title: "Xác nhận đặt lịch", 
+              {
+                step: "03",
+                title: "Xác nhận đặt lịch",
                 desc: "Điền thông tin và xác nhận đặt lịch thành công",
                 icon: <CheckCircle2 className="h-6 w-6" />
               },
             ].map((item, idx) => (
-              <div key={idx} className="relative">
-                <Card className="border-none shadow-lg bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                  <CardContent className="p-8 text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-6 font-bold text-2xl">
+              <div key={idx} className="relative h-full">
+                <Card className="border-none shadow-lg bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full">
+                  <CardContent className="p-8 text-center flex flex-col h-full">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-6 font-bold text-2xl mx-auto">
                       {item.step}
                     </div>
                     <div className="flex justify-center mb-4 text-primary">
                       {item.icon}
                     </div>
                     <h3 className="text-xl font-bold mb-4">{item.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{item.desc}</p>
+                    <p className="text-muted-foreground leading-relaxed flex-grow">{item.desc}</p>
                   </CardContent>
                 </Card>
                 {idx < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 z-10">
+                  <div className="hidden md:block absolute top-1/2 -right-4 z-10 translate-x-1/2 -translate-y-1/2">
                     <ArrowRight className="h-8 w-8 text-muted-foreground" />
                   </div>
                 )}
@@ -207,7 +207,7 @@ export default function HomePage() {
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                 MedBooking mang đến cho bạn trải nghiệm đặt lịch khám bệnh tiện lợi, nhanh chóng và chuyên nghiệp.
               </p>
-              
+
               <div className="space-y-4">
                 {[
                   "Đặt lịch online 24/7, không cần đến tận nơi",

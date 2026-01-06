@@ -20,14 +20,6 @@ router.get('/', async (req, res) => {
 
         const rows = await query(sql, params)
 
-        // Ensure rows is always an array
-        if (!rows || !Array.isArray(rows)) {
-            console.error("Query returned non-array result:", rows)
-            return res.status(500).json({
-                error: "Lỗi khi truy vấn database"
-            })
-        }
-
         const doctors = (rows as any[]).map((doc) => {
             // Parse JSON fields safely
             let education = []
