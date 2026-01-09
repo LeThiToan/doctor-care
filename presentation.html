@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Care Presentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #3b82f6;
+            --accent: #60a5fa;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            pointer-events: none;
+            background-image: 
+                radial-gradient(at 100% 0%, hsla(217,91%,60%,0.2) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, hsla(200,98%,72%,0.2) 0px, transparent 50%);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+            z-index: 10;
+        }
+
+        .slide.prev {
+            opacity: 0;
+            transform: translateY(-50px) scale(0.95);
+        }
+
+        .slide-content {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 4rem;
+            border-radius: 2rem;
+            box-shadow: var(--shadow);
+            max-width: 1000px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--text);
+        }
+
+        ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        li {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: transform 0.3s ease;
+        }
+
+        li:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        li strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        li p {
+            color: var(--text-light);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        button {
+            padding: 1rem;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            color: var(--text);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        /* Hero specific styles */
+        .hero .slide-content {
+            text-align: center;
+        }
+        
+        .hero ul {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .hero li {
+            padding: 0.5rem 1.5rem;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+        
+        .hero li:hover {
+            transform: none;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .floating-icon {
+            animation: float 4s ease-in-out infinite;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="progress" id="progressBar"></div>
+
+    <div class="container">
+        <!-- Slide 1: Intro -->
+        <div class="slide active hero" id="slide1">
+            <div class="slide-content">
+                <span class="badge">Báo cáo đồ án</span>
+                <h1>Doctor Care</h1>
+                <h2 style="font-weight: 400; font-size: 1.5rem; color: var(--text-light);">Hệ thống đặt lịch khám bệnh trực tuyến</h2>
+                <div style="margin-top: 3rem; display: flex; justify-content: center; gap: 4rem;">
+                    <div style="text-align: center;">
+                        <span class="icon floating-icon" style="animation-delay: 0s">🏥</span>
+                        <p>Thông minh</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <span class="icon floating-icon" style="animation-delay: 1s">⚡</span>
+                        <p>Nhanh chóng</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <span class="icon floating-icon" style="animation-delay: 2s">🛡️</span>
+                        <p>Bảo mật</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Thực Trạng -->
+        <div class="slide" id="slide2">
+            <div class="slide-content">
+                <span class="badge">Phần 1</span>
+                <h2>🚩 Thực Trạng</h2>
+                <ul>
+                    <li>
+                        <span class="icon">😫</span>
+                        <strong>Quá tải y tế</strong>
+                        <p>Bệnh viện thường xuyên đông đúc, quy trình tiếp nhận thủ công gây ùn tắc cục bộ.</p>
+                    </li>
+                    <li>
+                        <span class="icon">⏳</span>
+                        <strong>Thời gian chờ đợi</strong>
+                        <p>Người bệnh xếp hàng hàng giờ chỉ để khám bệnh trong vài phút.</p>
+                    </li>
+                    <li>
+                        <span class="icon">📋</span>
+                        <strong>Thiếu thông tin</strong>
+                        <p>Khó tiếp cận thông tin về trình độ bác sĩ, chuyên khoa và chi phí khám bệnh.</p>
+                    </li>
+                    <li>
+                        <span class="icon">🗄️</span>
+                        <strong>Quản lý thủ công</strong>
+                        <p>Việc sử dụng sổ sách dễ dẫn đến sai sót, trùng lịch hoặc thất lạc hồ sơ.</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: Thách Thức -->
+        <div class="slide" id="slide3">
+            <div class="slide-content">
+                <span class="badge">Phần 2</span>
+                <h2>🚧 Thách Thức</h2>
+                <ul>
+                    <li>
+                        <span class="icon">🔄</span>
+                        <strong>Xử lý thời gian thực</strong>
+                        <p>Cập nhật lịch rảnh tức thì để tránh Double Booking (đặt trùng giờ).</p>
+                    </li>
+                    <li>
+                        <span class="icon">👥</span>
+                        <strong>Trải nghiệm người dùng</strong>
+                        <p>Giao diện phải đơn giản, dễ dùng cho cả người lớn tuổi không rành công nghệ.</p>
+                    </li>
+                    <li>
+                        <span class="icon">🔒</span>
+                        <strong>Bảo mật & Riêng tư</strong>
+                        <p>Dữ liệu sức khỏe và thông tin cá nhân cần được bảo vệ tuyệt đối an toàn.</p>
+                    </li>
+                    <li>
+                        <span class="icon">⚙️</span>
+                        <strong>Tính linh hoạt</strong>
+                        <p>Khả năng xử lý các tình huống hủy lịch, đổi giờ hoặc sự cố đột xuất.</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 4: Mục Tiêu -->
+        <div class="slide" id="slide4">
+            <div class="slide-content">
+                <span class="badge">Phần 3</span>
+                <h2>🎯 Mục Tiêu & Giải Pháp</h2>
+                <ul>
+                    <li>
+                        <span class="icon">💻</span>
+                        <strong>Số hóa quy trình</strong>
+                        <p>Chuyển đổi hoàn toàn sang đặt lịch trực tuyến qua Web/App.</p>
+                    </li>
+                    <li>
+                        <span class="icon">💰</span>
+                        <strong>Tiết kiệm nguồn lực</strong>
+                        <p>Giảm thiểu thời gian chờ đợi và tối ưu hóa chi phí vận hành.</p>
+                    </li>
+                    <li>
+                        <span class="icon">✨</span>
+                        <strong>Minh bạch hóa</strong>
+                        <p>Công khai hồ sơ bác sĩ, đánh giá cộng đồng và bảng giá dịch vụ.</p>
+                    </li>
+                    <li>
+                        <span class="icon">📊</span>
+                        <strong>Tối ưu quản trị</strong>
+                        <p>Dashboard thông minh giúp bác sĩ và admin theo dõi hiệu quả hoạt động.</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button id="prevBtn" onclick="prevSlide()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button id="nextBtn" onclick="nextSlide()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progressBar');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const totalSlides = slides.length;
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index < currentSlide) {
+                    slide.classList.add('prev');
+                }
+            });
+
+            // Update Progress Bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Update Buttons
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // Initialize
+        updateSlide();
+    </script>
+</body>
+</html>

@@ -109,7 +109,7 @@ export default function ContactPage() {
             <CardContent>
               <div className="rounded-lg overflow-hidden border border-border shadow-sm">
                 <iframe
-                  src="https://www.google.com/maps?q=78+Đường+Hữu+Nghị+Đồng+Hới,+Việt+Nam&output=embed"
+                  src="https://maps.google.com/maps?q=78%20%C4%90%C6%B0%E1%BB%9Dng%20H%E1%BB%AFu%20Ngh%E1%BB%8B%2C%20%C4%90%E1%BB%93ng%20H%E1%BB%9Bi&t=&z=15&ie=UTF8&iwloc=&output=embed"
                   width="100%"
                   height="450"
                   style={{ border: 0 }}

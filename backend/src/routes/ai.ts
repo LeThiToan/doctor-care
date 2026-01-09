@@ -9,10 +9,10 @@ let genAI: GoogleGenerativeAI | null = null
 let model: any = null
 
 // Check if API key exists and is valid (not empty and not placeholder)
-const isValidApiKey = geminiApiKey && 
-                      typeof geminiApiKey === 'string' && 
-                      geminiApiKey.trim() !== '' && 
-                      !geminiApiKey.trim().includes('your_gemini_api_key')
+const isValidApiKey = geminiApiKey &&
+    typeof geminiApiKey === 'string' &&
+    geminiApiKey.trim() !== '' &&
+    !geminiApiKey.trim().includes('your_gemini_api_key')
 
 if (isValidApiKey) {
     try {
@@ -41,8 +41,10 @@ NHIỆM VỤ CỦA BẠN:
 
 THÔNG TIN VỀ MEDBOOKING:
 - MedBooking là hệ thống đặt lịch khám bệnh trực tuyến
+- Website chính thức: https://vermillion-kulfi-ea1332.netlify.app
 - Có nhiều chuyên khoa: Nội khoa, Ngoại khoa, Nhi khoa, Sản phụ khoa, Tim mạch, Thần kinh, Da liễu, Mắt, Tai mũi họng, Răng hàm mặt
 - Người dùng có thể đặt lịch, tìm bác sĩ, xem lịch hẹn của mình
+- Không có chức năng thanh toán
 
 THÔNG TIN LIÊN HỆ:
 Khi người dùng hỏi về thông tin liên hệ, số điện thoại, Facebook, Zalo, hoặc cách liên hệ, bạn PHẢI trả lời với thông tin sau:
@@ -74,7 +76,7 @@ async function getGeminiResponse(message: string, conversationHistory: any[]): P
         // Build conversation history for context
         const history = conversationHistory.slice(-10)
         let fullPrompt = SYSTEM_PROMPT + '\n\n'
-        
+
         // Add conversation history
         if (history.length > 0) {
             fullPrompt += 'Lịch sử hội thoại:\n'
@@ -83,7 +85,7 @@ async function getGeminiResponse(message: string, conversationHistory: any[]): P
             })
             fullPrompt += '\n'
         }
-        
+
         fullPrompt += `Người dùng: ${message}\nTrợ lý:`
 
         // Use generateContent directly instead of chat
@@ -98,28 +100,28 @@ async function getGeminiResponse(message: string, conversationHistory: any[]): P
             status: error.status,
             message: error.message ? error.message.substring(0, 200) : 'Unknown error'
         }
-        
+
         // Only log safe error information (no API keys or sensitive data)
         console.error('Error calling Gemini API:', {
             status: errorInfo.status,
             message: errorInfo.message
         })
-        
+
         // Handle specific error cases
         if (error.status === 429) {
             return 'Xin lỗi, tôi đã vượt quá giới hạn sử dụng API. Vui lòng thử lại sau một chút, hoặc kiểm tra quota và billing tại https://ai.dev/usage?tab=rate-limit'
         }
-        
+
         // Handle leaked API key error (403 Forbidden)
         if (error.status === 403 && error.message && error.message.includes('leaked')) {
             return '⚠️ API key đã bị báo là rò rỉ (leaked). Vui lòng tạo API key mới tại https://aistudio.google.com/apikey và cập nhật GEMINI_API_KEY trong file .env của backend. Sau đó khởi động lại server.'
         }
-        
+
         // Handle other 403 errors
         if (error.status === 403) {
             return '⚠️ API key không hợp lệ hoặc không có quyền truy cập. Vui lòng kiểm tra lại GEMINI_API_KEY trong file .env hoặc tạo API key mới tại https://aistudio.google.com/apikey'
         }
-        
+
         return null
     }
 }
@@ -130,33 +132,33 @@ router.post('/chat', async (req, res) => {
         const { message, conversationHistory } = req.body
 
         if (!message || typeof message !== 'string') {
-            return res.status(400).json({ 
-                success: false, 
-                error: "Vui lòng cung cấp tin nhắn hợp lệ" 
+            return res.status(400).json({
+                success: false,
+                error: "Vui lòng cung cấp tin nhắn hợp lệ"
             })
         }
 
         // Check if Gemini API is configured
         if (!model) {
-            return res.status(503).json({ 
-                success: false, 
-                error: "AI chatbox chưa được cấu hình. Vui lòng thêm GEMINI_API_KEY vào file .env để sử dụng tính năng này." 
+            return res.status(503).json({
+                success: false,
+                error: "AI chatbox chưa được cấu hình. Vui lòng thêm GEMINI_API_KEY vào file .env để sử dụng tính năng này."
             })
         }
 
         // Use Gemini AI
         const geminiResponse = await getGeminiResponse(message, conversationHistory || [])
-        
+
         if (!geminiResponse) {
-            return res.status(500).json({ 
-                success: false, 
-                error: "Không thể kết nối với AI service. Vui lòng thử lại sau." 
+            return res.status(500).json({
+                success: false,
+                error: "Không thể kết nối với AI service. Vui lòng thử lại sau."
             })
         }
-        
+
         // Check if response is an error message (quota exceeded, leaked API key, or other API errors)
-        if (geminiResponse.includes('vượt quá giới hạn') || 
-            geminiResponse.includes('quota') || 
+        if (geminiResponse.includes('vượt quá giới hạn') ||
+            geminiResponse.includes('quota') ||
             geminiResponse.includes('API key') ||
             geminiResponse.includes('⚠️')) {
             // Return as success but with error message in response so user can see it
@@ -172,9 +174,9 @@ router.post('/chat', async (req, res) => {
         })
     } catch (error) {
         console.error("Error processing AI chat:", error)
-        res.status(500).json({ 
-            success: false, 
-            error: "Đã có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại sau." 
+        res.status(500).json({
+            success: false,
+            error: "Đã có lỗi xảy ra khi xử lý yêu cầu. Vui lòng thử lại sau."
         })
     }
 })
