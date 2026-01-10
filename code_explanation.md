@@ -9,169 +9,80 @@ Tài liệu này giải thích chi tiết cách viết API ở Backend và cách
 ### 1.1. Backend (API Creation)
 **File chính:** `backend/src/routes/appointments.ts`
 
-Backend sử dụng **Express Router** để định nghĩa các endpoints. Dưới đây là logic chính của API tạo lịch hẹn:
+Backend sử dụng **Express Router** để định nghĩa các endpoints. Dưới đây là logic chính:
+
+#### A. Tạo lịch hẹn (POST `/`)
+*   **Nhận dữ liệu**: Nhận thông tin bệnh nhân, bác sĩ, ngày và giờ khám từ `req.body`.
+*   **Lưu Database**: Sử dụng `INSERT INTO appointments` với trạng thái mặc định là `'pending'`.
+*   **Gửi Email**: Sau khi lưu thành công, hệ thống tự động gửi email xác nhận cho bệnh nhân thông qua service `email.ts`.
+
+#### B. Kiểm tra giờ trống (GET `/available`)
+*   **Tham số**: `doctor_id` và `date`.
+*   **Logic**: Tìm các lịch hẹn đã có của bác sĩ đó vào ngày được chọn với trạng thái `pending` hoặc `confirmed`. Trả về danh sách các khung giờ đã bị chiếm.
 
 ```typescript
-// Định nghĩa router
-const router = Router();
-
-// Endpoint: POST /api/appointments
-router.post('/', async (req, res) => {
-    try {
-        // 1. Nhận dữ liệu từ Frontend gửi lên trong req.body
-        const {
-            user_id, patient_name, doctor_id, 
-            appointment_date, appointment_time, ... 
-        } = req.body;
-
-        // 2. Validate dữ liệu (Kiểm tra thiếu trường bắt buộc)
-        if (!patient_name || !doctor_id || !appointment_date || !appointment_time) {
-            return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
-        }
-
-        // 3. Thực thi câu lệnh SQL INSERT vào database
-        await query(
-            `INSERT INTO appointments (...) VALUES (?, ..., 'pending')`,
-            [user_id, patient_name, doctor_id, ...]
+// backend/src/routes/appointments.ts
+router.get('/available', async (req, res) => {
+    const { doctor_id, date } = req.query;
+    const bookedSlots = await query(
+        `SELECT appointment_time FROM appointments 
+         WHERE doctor_id = ? AND DATE(appointment_date) = ? 
+         AND status IN ('pending', 'confirmed')`,
+        [doctor_id, date]
         );
-
-        // 4. Trả về phản hồi thành công (HTTP 201)
-        res.status(201).json({ message: "Đặt lịch thành công" });
-    } catch (error) {
-        // Xử lý lỗi
-        res.status(500).json({ message: "Lỗi máy chủ" });
-    }
+    res.json({ bookedTimes: bookedSlots.map(row => row.appointment_time) });
 });
 ```
 
 ### 1.2. Frontend (API Consumption)
-**File Service:** `frontend/lib/api.ts`
-Frontend không gọi trực tiếp URL trong component mà qua lớp service trung gian để tái sử dụng.
+**Component chính:** `frontend/components/booking-wizard.tsx`
 
-```typescript
-// frontend/lib/api.ts
-export const api = {
-  // Hàm wrapper gọi API tạo lịch hẹn
-  createAppointment: async (appointmentData: any) => {
-    // Sử dụng fetch chuẩn của JS
-    const response = await fetch(`${API_BASE_URL}/appointments`, {
-      method: 'POST', // Chỉ định phương thức POST
-      headers: {
-        'Content-Type': 'application/json', // Báo cho server biết body là JSON
-      },
-      body: JSON.stringify(appointmentData), // Chuyển object JS thành chuỗi JSON
-    })
-    return response.json();
-  },
-  //...
-}
-```
+Frontend sử dụng một quy trình 5 bước được quản lý bởi state `bookingData`.
 
-**File UI (Sử dụng):** `frontend/components/booking-steps/confirmation-step.tsx` (được gọi từ `booking-wizard.tsx`)
-
-```typescript
-// Khi người dùng bấm nút "Xác nhận đặt lịch"
-const handleConfirm = async () => {
-    try {
-        // Gọi hàm từ service api
-        await api.createAppointment(finalBookingData);
-        // Nếu thành công -> Chuyển hướng hoặc hiện thông báo
-        router.push('/booking/success');
-    } catch (error) {
-        alert("Có lỗi xảy ra");
-    }
-}
-```
+#### Quy trình 5 bước:
+1.  **Chọn chuyên khoa (`SpecialtyStep`)**: Lọc danh sách bác sĩ.
+2.  **Chọn bác sĩ (`DoctorStep`)**: Chọn bác sĩ cụ thể.
+3.  **Chọn thời gian (`TimeStep`)**:
+    *   Sử dụng component `Calendar` để chọn ngày.
+    *   **Quan trọng**: Mỗi khi chọn ngày, Frontend gọi API `/available` để lấy danh sách giờ đã hết và vô hiệu hóa (`disable`) các nút chọn giờ tương ứng.
+4.  **Thông tin bệnh nhân (`PatientInfoStep`)**: Nhập thông tin chi tiết người khám.
+5.  **Xác nhận (`ConfirmationStep`)**:
+    *   Hiển thị tóm tắt và gọi `api.createAppointment` để gửi dữ liệu lên Backend.
 
 ---
 
 ## 2. Chức năng Chat với Bác sĩ (Real-time)
 
-Chức năng này phức tạp hơn vì kết hợp cả **REST API** (để lấy lịch sử tin nhắn) và **Socket.io** (để nhắn tin tức thời).
+Chức năng này kết hợp cả **REST API** (để lấy lịch sử) và **Socket.io** (để nhắn tin tức thời).
 
 ### 2.1. Backend (API & Socket)
-**File API:** `backend/src/routes/chat.ts`
+**File chính:** `backend/src/routes/chat.ts` và logic Socket trong `index.ts`.
 
-```typescript
-// Endpoint: GET /api/chat/rooms/:roomId/messages
-// Lấy lịch sử tin nhắn của một phòng chat
-router.get('/rooms/:roomId/messages', verifyToken, async (req, res) => {
-    const { roomId } = req.params;
-    
-    // Query Database lấy tin nhắn cũ
-    const messages = await query(
-        `SELECT * FROM messages WHERE chat_room_id = ? ORDER BY created_at ASC`,
-        [roomId]
-    );
-    
-    res.json(messages);
-});
-```
-
-**Socket.io Event:** (Thường nằm trong `index.ts` hoặc file socket handler riêng)
-Ngoài API, Backend lắng nghe sự kiện socket:
-*   `socket.on('join_room', roomId)`: Cho user tham gia phòng chat.
-*   `socket.on('send_message', data)`: Nhận tin nhắn mới -> Lưu vào DB -> Phát lại (`emit`) cho người kia trong phòng.
+*   **API**: Trả về danh sách phòng chat và lịch sử tin nhắn từ database.
+*   **Socket**: Lắng nghe sự kiện `send_message`, lưu tin nhắn vào database và phát lại (`emit`) cho người nhận trong cùng phòng.
 
 ### 2.2. Frontend (Socket & API)
-**File Service:** `frontend/lib/chat-api.ts`
+**Component chính:** `frontend/components/chat/chat-window.tsx`
 
-```typescript
-export const chatApi = new ChatAPI();
-// Hàm lấy lịch sử tin nhắn
-// Gọi GET /api/chat/rooms/{id}/messages
-async getMessages(roomId: number) {
-    return this.request(`/chat/rooms/${roomId}/messages`);
-}
-```
-
-**File UI (Chat Window):** `frontend/components/chat/chat-window.tsx`
-Component này sử dụng 2 cơ chế song song:
-
-1.  **Lấy lịch sử tin nhắn (REST API):**
-    ```typescript
-    // Dùng useEffect để lấy tin cũ khi mở cửa sổ chat
-    useEffect(() => {
-        const loadMessages = async () => {
-            const history = await chatApi.getMessages(roomId);
-            setMessages(history); // Hiển thị tin cũ
-        };
-        loadMessages();
-    }, [roomId]);
-    ```
-
-2.  **Nhắn tin tức thời (Socket.io Hook):**
-    ```typescript
-    // Sử dụng hook useSocket để kết nối
-    const { socket } = useSocket();
-
-    // Lắng nghe tin nhắn mới đến
-    useEffect(() => {
-        socket.on('new_message', (msg) => {
-            // Cập nhật state để hiện tin nhắn mới ngay lập tức
-            setMessages(prev => [...prev, msg]); 
-        });
-    }, [socket]);
-
-    // Gửi tin nhắn
-    const handleSendMessage = () => {
-        socket.emit('send_message', {
-            roomId,
-            message: newMessage
-        });
-        // Không cần gọi API POST, socket server sẽ tự lưu vào DB
-    };
-    ```
+1.  **Tải lịch sử (REST API)**: Dùng `useEffect` gọi `chatApi.getMessages(roomId)` khi mở cửa sổ chat.
+2.  **Nhận tin nhắn mới (Socket)**: Lắng nghe sự kiện socket để cập nhật giao diện ngay lập tức mà không cần tải lại trang.
 
 ---
 
-## Tóm tắt Mô hình
+## Tóm tắt Luồng Dữ liệu (Booking)
+```mermaid
+sequenceDiagram
+    participant User as Người dùng (FE)
+    participant API as Express API (BE)
+    participant DB as MySQL Database
 
-1.  **Mô hình API (Booking):**
-    *   **Client** gửi Request (POST/GET) -> **Server** xử lý Logic & DB -> Trả về Response JSON.
-    *   Đây là mô hình **Request-Response** truyền thống, phù hợp cho các tác vụ như đặt lịch, xem danh sách.
+    User->>API: GET /appointments/available (Kiểm tra giờ trống)
+    API->>DB: SELECT booked times
+    DB-->>API: Trả về dữ liệu
+    API-->>User: Hiển thị các giờ còn trống
 
-2.  **Mô hình Socket (Chat):**
-    *   **Client A** gửi Event (qua Socket) -> **Server** -> Phát Event tới **Client B**.
-    *   Đây là mô hình **Event-driven**, giúp tin nhắn hiển thị ngay lập tức mà không cần F5 (Real-time).
-    *   Tuy nhiên, vẫn dùng API truyền thống để tải lại lịch sử tin nhắn cũ.
+    User->>API: POST /appointments (Xác nhận đặt lịch)
+    API->>DB: INSERT INTO appointments
+    DB-->>API: Success
+    API->>User: Thông báo thành công & Gửi Email
+```

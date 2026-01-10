@@ -34,9 +34,9 @@ class ChatAPI {
 
     private async request(endpoint: string, options: RequestInit = {}) {
         const token = this.getAuthToken()
-        const headers: HeadersInit = {
+        const headers: Record<string, string> = {
             'Content-Type': 'application/json',
-            ...options.headers,
+            ...(options.headers as Record<string, string>),
         }
 
         if (!token) {
@@ -60,7 +60,7 @@ class ChatAPI {
             if (response.status === 401) {
                 // Token không hợp lệ hoặc đã hết hạn
                 const error = await response.json().catch(() => ({ error: 'Token không hợp lệ' }))
-                
+
                 // Xóa token không hợp lệ
                 if (typeof window !== 'undefined') {
                     console.error('Chat API: Token expired or invalid, clearing storage')
@@ -68,13 +68,13 @@ class ChatAPI {
                     localStorage.removeItem('doctor_token')
                     localStorage.removeItem('user')
                     localStorage.removeItem('doctor')
-                    
+
                     // Redirect to login nếu đang ở client side
                     if (error.error?.includes('hết hạn') || error.error?.includes('expired')) {
                         window.location.href = '/login?expired=true'
                     }
                 }
-                
+
                 throw new Error(error.error || 'Token không hợp lệ. Vui lòng đăng nhập lại.')
             }
             const error = await response.json().catch(() => ({ error: 'Lỗi server' }))

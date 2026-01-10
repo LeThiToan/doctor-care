@@ -32,6 +32,7 @@ export default function ConfirmationStep({
 }: ConfirmationStepProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isAgreed, setIsAgreed] = useState(false)
   const router = useRouter()
 
   // 🟢 Hàm xử lý xác nhận và lưu dữ liệu vào DB + gửi email
@@ -219,8 +220,15 @@ export default function ConfirmationStep({
       <Card className="bg-muted/50">
         <CardContent className="p-4">
           <div className="flex items-start gap-2">
-            <input type="checkbox" className="mt-1" required />
-            <p className="text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+              id="confirm-terms"
+              checked={isAgreed}
+              onChange={(e) => setIsAgreed(e.target.checked)}
+              required
+            />
+            <label htmlFor="confirm-terms" className="text-sm text-muted-foreground cursor-pointer select-none">
               Tôi xác nhận rằng tất cả thông tin trên là chính xác và đồng ý với{" "}
               <Button variant="link" className="p-0 h-auto text-sm">
                 điều khoản sử dụng
@@ -230,7 +238,7 @@ export default function ConfirmationStep({
                 chính sách bảo mật
               </Button>{" "}
               của MedBooking.
-            </p>
+            </label>
           </div>
         </CardContent>
       </Card>
@@ -239,7 +247,7 @@ export default function ConfirmationStep({
         <Button variant="outline" onClick={onPrevious}>
           Quay lại
         </Button>
-        <Button onClick={handleConfirm} disabled={isSubmitting}>
+        <Button onClick={handleConfirm} disabled={isSubmitting || !isAgreed}>
           {isSubmitting ? "Đang xử lý..." : "Xác nhận đặt lịch"}
         </Button>
       </div>
