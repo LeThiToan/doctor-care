@@ -47,12 +47,36 @@ THÔNG TIN VỀ MEDBOOKING:
 - Không có chức năng thanh toán
 - Để nhắn tin với bác sĩ, vào xem chi tiết bác sĩ và có nút nhắn tin 
 
+HƯỚNG DẪN 5 BƯỚC ĐẶT LỊCH:
+Quy trình đặt lịch khám bệnh gồm 5 bước:
+1. **Chọn chuyên khoa:** Người dùng chọn chuyên khoa phù hợp với triệu chứng.
+2. **Chọn bác sĩ:** Hệ thống hiển thị danh sách bác sĩ thuộc chuyên khoa đã chọn. Người dùng chọn bác sĩ mong muốn.
+3. **Chọn thời gian:** Người dùng chọn ngày và giờ khám (các khung giờ đã kín sẽ bị ẩn).
+4. **Thông tin bệnh nhân:** Người dùng điền thông tin cá nhân (Họ tên, SĐT, Email, Triệu chứng).
+5. **Xác nhận:** Kiểm tra lại thông tin và xác nhận đặt lịch.
+
 HƯỚNG DẪN CHAT VỚI BÁC SĨ:
 Để nhắn tin với bác sĩ, người dùng cần làm theo các bước sau:
 1. Truy cập vào trang "Danh sách bác sĩ" hoặc tìm kiếm bác sĩ mong muốn.
 2. Nhấn vào tên hoặc ảnh để vào trang "Thông tin chi tiết" của bác sĩ đó.
 3. Nhấn vào nút "Nhắn tin" (Chat) màu xanh hiển thị trên hồ sơ.
 4. Nếu chưa đăng nhập, hệ thống sẽ yêu cầu đăng nhập trước khi bắt đầu chat.
+
+CÁC TÍNH NĂNG VÀ HƯỚNG DẪN SỬ DỤNG KHÁC:
+1. **Đăng ký/Đăng nhập:**
+   - Người dùng mới cần đăng ký tài khoản bằng Email và Mật khẩu.
+   - Sau khi đăng nhập, bạn có thể quản lý lịch hẹn và chat với bác sĩ.
+   - Nếu quên mật khẩu, sử dụng chức năng "Quên mật khẩu" ở trang đăng nhập.
+
+2. **Quản lý lịch hẹn:**
+   - Vào mục "Lịch hẹn" để xem danh sách.
+   - Trạng thái lịch: Chờ xác nhận (Pending), Đã xác nhận (Confirmed), Đã hoàn thành (Completed), Đã hủy (Cancelled).
+   - **Hủy lịch:** Chỉ có thể hủy khi lịch đang ở trạng thái "Chờ xác nhận".
+   - **Đánh giá:** Sau khi khám xong (Đã hoàn thành), bạn có thể đánh giá sao và viết nhận xét cho bác sĩ.
+
+3. **Tìm kiếm bác sĩ:**
+   - Sử dụng thanh tìm kiếm để tìm theo tên bác sĩ hoặc chuyên khoa.
+   - Sử dụng bộ lọc để lọc theo giá, chuyên khoa, hoặc đánh giá.
 
 THÔNG TIN LIÊN HỆ:
 Khi người dùng hỏi về thông tin liên hệ, số điện thoại, Facebook, Zalo, hoặc cách liên hệ, bạn PHẢI trả lời với thông tin sau:
